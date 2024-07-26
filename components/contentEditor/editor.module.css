@@ -1,0 +1,18 @@
+.editorContainer {
+  text-align: left;
+  margin: 0 auto;
+  text-wrap: balance;
+  max-width: 100%;
+ min-height: 30vh;
+ margin-bottom: 50px;
+}
+
+@media (min-width: 768px) {
+  .editorContainer {
+    margin: 10px 10px;
+  }
+}
+
+
+
+

@@ -1,0 +1,123 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,700;1,600&display=swap");
+
+.container{
+    background-image: url("/assets/background.svg");
+    background-size: cover;
+    background-position: center; 
+    min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: #000;
+  font-family: "Poppins";
+  padding: 0 1rem;
+}
+ 
+  .flexContainer {
+    display: flex;
+ 
+   }
+  .logoIcon{
+    width: 15%;
+    height: 15%;
+  }
+  .section {
+    margin: 30px 50px;
+    padding: 20px;
+  }
+  
+  .column {
+ 
+    min-width: 250px;
+    margin:0 auto;
+  }
+  
+  .heading {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-family: Poppins;
+  }
+  
+  .list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .listItem {
+    margin-bottom: 0.5rem;
+    font-size: 1.15rem;
+  }
+  
+  .link {
+    
+    text-decoration: none;
+  }
+  
+  .link:hover {
+    text-decoration: underline;
+  }
+  
+  .description {
+    margin-bottom: 1rem;
+    width: 80%;
+    font-size: 1.15rem;
+  }
+  
+  .socialIcons {
+    display: flex;
+    gap: 1.5rem;
+   
+  }
+  
+  
+  .icon {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .icon:hover{
+    filter: brightness(1.);
+    transition: filter 0.3s ease;
+  }
+  .form {
+    display: flex;
+    flex-direction: column;
+   
+  }
+  
+  .input {
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    border: 1px solid #ccc;
+    margin-bottom: 0.5rem;
+    width: 80%;
+    height: 40px;
+  }
+  
+  .button {
+    background-color: #2b6cb0;
+    
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    width: 80%;
+    height: 40px;
+    font-size: 0.8rem;
+  }
+  
+  .button:hover {
+    background-color: #415364 ;
+  }
+  
+  .footerBottom {
+    text-align: center;
+    margin-top: 3rem;
+   
+  }
+  
+  .copy {
+    font-size: 0.875rem;
+  }
+  

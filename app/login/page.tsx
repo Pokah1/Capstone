@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { headers } from "next/headers";
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/utils/supabase/server"; // Server-side client
 import { redirect } from "next/navigation";
 import { SubmitButton } from "./submit-button";
+import SocialLogin from "@/components/socialLogin"; // Client component
 
 export default function Login({
   searchParams,
@@ -25,7 +26,7 @@ export default function Login({
       return redirect("/login?message=Could not authenticate user");
     }
 
-    return redirect("/protected");
+    return redirect("/dashboard");
   };
 
   const signUp = async (formData: FormData) => {
@@ -50,6 +51,11 @@ export default function Login({
 
     return redirect("/login?message=Check email to continue sign in process");
   };
+
+  //handle signOut process
+
+  
+ 
 
   return (
     <div className="flex-1 flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
@@ -113,7 +119,9 @@ export default function Login({
             {searchParams.message}
           </p>
         )}
+     
       </form>
+      <SocialLogin /> 
     </div>
   );
 }

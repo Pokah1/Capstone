@@ -1,0 +1,28 @@
+/* Ensure the main wrapper takes the full viewport height */
+.contentWrapper {
+  background-image: url("/assets/404.jpg"); 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  color: white; /* Optional: For better text visibility */
+}
+
+.container {
+  text-align: center;
+}
+
+.title {
+  font-size: 2em;
+  margin-bottom: 1em;
+}
+
+.description {
+  margin-bottom: 1em;
+}
+
+.link {
+  color: white;
+  text-decoration: underline;
+}

@@ -1,0 +1,74 @@
+.testimonial {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+  overflow: hidden;
+  position: relative;
+  }
+  
+  .wrapper {
+    display: flex;
+  transition: transform 1s ease-in-out;
+ 
+  }
+  
+  .slide {
+    flex: 0 0 100%;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    position: absolute;
+    width: 100%;
+    transform: translateX(100%);
+  }
+  
+  .slide.active {
+    opacity: 1;
+    position: relative;
+    animation: slideIn 1s forwards;
+  }
+  
+  
+  @keyframes slideIn {
+    0% {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  .quote {
+    font-size: 1.5rem;
+    opacity: 0;
+    animation: fadeIn 1s forwards;
+  }
+  
+  .name {
+font-weight: 600;
+font-size: 1.3rem;
+    opacity: 0;
+    animation: fadeIn 1s forwards;
+  }
+  
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+ 
