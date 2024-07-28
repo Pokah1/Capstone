@@ -6,6 +6,9 @@ const nextConfig = {
       'unsplash.com',
       'images.unsplash.com',
       'source.unsplash.com',
+      'avatars.githubusercontent.com', // GitHub
+      'lh3.googleusercontent.com',     // Google
+      'graph.facebook.com',            // Facebook
     ],
   },
   webpack(config) {

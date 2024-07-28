@@ -7,7 +7,7 @@ import styles from '@/app/content/content.module.css';
 import Cover from '@/components/contentEditor/cover';
 import FooterBottom from '@/components/firstPage/footerBottom';
 
-import Button from '@/components/Button';
+import Button from '@/components/NavButtons';
 // import cameraIcom from '@/assets/camera.svg'
 
 

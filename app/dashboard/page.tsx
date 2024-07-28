@@ -1,14 +1,11 @@
-
 import Image from 'next/image';
 import Link from 'next/link';
-import profileIcon from '@/app/assets/profile-pic.jpg'
-import styles from '@/app/dashboard/dashboard.module.css'
+import profileIcon from '@/app/assets/profile-pic.jpg';
+import styles from '@/app/dashboard/dashboard.module.css';
 import FooterBottom from '@/components/firstPage/footerBottom';
-// import AuthButton from "@/omponents/AuthButton";
+import AuthButton from '@/components/AuthButton';
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import SignOut from '@/components/signOut';
-
 
 export default async function Home() {
   const supabase = createClient();
@@ -18,30 +15,27 @@ export default async function Home() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return redirect("/login");
+    redirect("/");
+    return null; // To ensure no further rendering occurs
   }
 
-
   const profileImageSrc = user.user_metadata?.avatar_url || profileIcon;
-
 
   return (
     <div className={styles.dashboard}>
       <aside className={styles.aside}>
-      <Link href="/content">
-        <button className={styles.createContentButton}>Write ✍️</button>
-      </Link>
-      <header className={styles.header}>
-        <h2 className={styles.name}>
-          Welcome {user.phone || 'John Doe'}
-        </h2>
-        <div className={styles.profile}>
-          <Image src={profileImageSrc} alt="Profile" width={50} height={50} />
-          <span>{user?.email}</span>
-        </div>
-        <SignOut />
-      </header>
-    </aside>
+        <AuthButton />
+        <Link href="/content">
+          <button className={styles.createContentButton}>Write ✍️</button>
+        </Link>
+        <header className={styles.header}>
+        
+          <div className={styles.profile}>
+            <Image src={profileImageSrc} alt="Profile" width={50} height={50} />
+            
+          </div>
+        </header>
+      </aside>
       <section className={styles.searchBar}>
         <h2>Search</h2>
         <input type="text" placeholder="Search content or users..." />
@@ -87,7 +81,7 @@ export default async function Home() {
           <li><Link href="/explore">Explore Content</Link></li>
         </ul>
       </section>
-      <FooterBottom/>
+      <FooterBottom />
     </div>
   );
 }

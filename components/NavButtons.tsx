@@ -6,7 +6,7 @@ interface ButtonProps{
 }
 
 const Button: React.FC<ButtonProps> = ({
-  text
+  text  
 }) => {
   return (
     <Link href="/dashboard">

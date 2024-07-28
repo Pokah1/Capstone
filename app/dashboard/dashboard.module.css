@@ -4,7 +4,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    color: #333;
+    color: #fff;
     padding: 10px;
 
     width: 95%;
@@ -47,7 +47,6 @@
   
   .header h1 {
     font-size: 2.5rem;
-    color: #fff;
     margin-bottom: 10px;
   }
   
@@ -63,11 +62,7 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
   
-  .profile .name {
-    font-size: 1.8rem;
-    color: #c143da;
-    font-weight: bold;
-  }
+
   
   .metrics {
     display: flex;
@@ -92,13 +87,13 @@
   
   .metricItem h2 {
     font-size: 1.2rem;
-    color: #fff;
+
     margin-bottom: 10px;
   }
   
   .metricItem p {
     font-size: 2rem;
-    color: #c9c9e3;
+    color: #cfbfbf;
     font-weight: bold;
   }
   
