@@ -42,7 +42,7 @@ const SideNav: React.FC<SideNavProps> = ({ id }) => {
   ];
 
   const accountItems: MenuItems[] = [
-    { title: 'Profile', icon: profileIcon, onClick: () => router.push('/profile') },
+    { title: 'Profile', icon: profileIcon, onClick: () => router.push('/profiles') },
     { title: 'Settings', icon: settingsIcon, onClick: () => router.push('/settings') },
     // { title: 'Sign Out', icon: logoutIcon, onClick: signOut },
   ];

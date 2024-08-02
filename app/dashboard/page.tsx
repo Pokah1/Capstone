@@ -1,13 +1,36 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import profileIcon from '@/app/assets/profile-pic.jpg';
-import styles from '@/app/dashboard/dashboard.module.css';
-import FooterBottom from '@/components/firstPage/footerBottom';
-import AuthButton from '@/components/AuthButton';
+// pages/dashboard2.tsx
+import Link from "next/link";
+import Image from "next/image";
+import profileIcon from "@/app/assets/profile-pic.jpg";
+import AuthButton from "@/components/AuthButton";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import FooterBottom from "@/components/firstPage/footerBottom";
+import dynamic from "next/dynamic";
 
-export default async function Home() {
+// Dynamically import BarChart as a client-side component
+const BarChart = dynamic(() => import("@/components/charts/barChart"), {
+  ssr: false,
+});
+
+interface DashboardProps {
+  data: any; // Adjust this type based on your data structure
+}
+
+const barData = {
+  labels: ["January", "February", "March", "April", "May", "June"],
+  datasets: [
+    {
+      label: "Monthly Posts",
+      data: [65, 59, 80, 81, 56, 55],
+      backgroundColor: "rgba(75, 192, 192, 0.2)",
+      borderColor: "rgba(75, 192, 192, 1)",
+      borderWidth: 1,
+    },
+  ],
+};
+
+const Dashboard: React.FC<DashboardProps> = async () => {
   const supabase = createClient();
 
   const {
@@ -19,69 +42,221 @@ export default async function Home() {
     return null; // To ensure no further rendering occurs
   }
 
-  const profileImageSrc = user.user_metadata?.avatar_url || profileIcon;
-
   return (
-    <div className={styles.dashboard}>
-      <aside className={styles.aside}>
-        <AuthButton />
-        <Link href="/content">
-          <button className={styles.createContentButton}>Write ✍️</button>
-        </Link>
-        <header className={styles.header}>
-        
-          <div className={styles.profile}>
-            <Image src={profileImageSrc} alt="Profile" width={50} height={50} />
-            
+    <div className="flex flex-col h-screen text-white p-2.5 w-[95%] box-border mb-3">
+      {/* Header */}
+      <header className="bg-primary text-primary-foreground py-4 px-6 flex flex-wrap items-center justify-between">
+  <div className="flex items-center gap-4">
+    <nav className="hidden md:flex items-center gap-6">
+      <Link href="/content">
+        <button className="bg-white text-black py-2 px-4 rounded-lg border border-gray-300 hover:bg-blue-950 hover:text-white">
+          Write ✍️
+        </button>
+      </Link>
+      <Link href="/discover">
+        <p className="hover:text-accent hover:underline">Discover</p>
+      </Link>
+      <Link href="/categories">
+        <p className="hover:text-accent hover:underline">Categories</p>
+      </Link>
+      <Link href="/analytics">
+        <p className="hover:text-accent hover:underline">Analytics</p>
+      </Link>
+    </nav>
+    <nav className="flex md:hidden items-center gap-6">
+      {/* <!-- Mobile menu items or hamburger menu --> */}
+    </nav>
+  </div>
+  <div className="flex items-center gap-4">
+    <button className="bg-white text-black py-2 px-4 rounded-lg border border-gray-300 hover:bg-red-950 hover:text-white">
+      Upgrade to Pro
+    </button>
+    <AuthButton />
+    <div className="flex items-center">
+      <Image
+        src={user.user_metadata?.avatar_url || profileIcon}
+        alt="Profile"
+        width={50}
+        height={50}
+        className="rounded-full"
+      />
+    </div>
+  </div>
+</header>
+
+      {/* Main Content */}
+      <main className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+        {/* Sidebar */}
+        <div className="col-span-1 md:col-span-2">
+          {/* Search Section */}
+          <section className="mt-6">
+            <h2 className="text-xl font-bold">Search</h2>
+            <input
+              type="text"
+              placeholder="Search content or users..."
+              className="mt-2 w-full p-2 border border-gray-300 rounded-md text-black"
+            />
+          </section>
+          <div className="flex flex-wrap justify-center gap-5 ">
+          <div className="flex-1 min-w-[400px] max-w-[400px] rounded-lg p-5 shadow-md border pb-2 mt-3">
+            <h2 className="text-2xl mb-2 text-white">Monthly Posts</h2>
+            {/* Import */}
+            <BarChart data={barData} />
+
+            <p className="text-base text-white mt-2">
+              The Monthly Posts chart illustrates the volume of content created
+              each month. A consistent increase indicates growing user activity
+              and content creation.
+            </p>
           </div>
-        </header>
-      </aside>
-      <section className={styles.searchBar}>
-        <h2>Search</h2>
-        <input type="text" placeholder="Search content or users..." />
-      </section>
-      <section className={styles.metrics}>
-        <div className={styles.metricItem}>
-          <h2>Posts</h2>
-          <p>42</p>
         </div>
-        <div className={styles.metricItem}>
-          <h2>Followers</h2>
-          <p>123</p>
         </div>
-        <div className={styles.metricItem}>
-          <h2>Likes</h2>
-          <p>789</p>
+       
+
+        {/* Personalized Feed */}
+        <div className="col-span-1">
+          <div className="border rounded-md p-4 mt-28">
+            <div className="border-b pb-2">
+              <h2 className="text-xl font-bold">Personalized Feed</h2>
+              <p className="text-sm text-muted">
+                Discover new content based on your interests and reading
+                history.
+              </p>
+            </div>
+            <div className="pt-2">
+              <div className="grid gap-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-start gap-4">
+                    <div className="shrink-0 w-16 h-16 rounded-full bg-muted" />
+                    <div>
+                      <h4 className="font-medium">Article Title</h4>
+                      <p className="text-muted-foreground text-sm">
+                        Author Name • 2 hours ago
+                      </p>
+                      <p className="text-sm line-clamp-2">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                        Sed euismod, nisl nec ultricies lacus, nisl nec
+                        ultricies lacus.
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
-      </section>
-      <section>
-        {/* <PieChart data={pieData} /> */}
-      </section>
-      <section className={styles.recentActivity}>
-        <h2>Recent Activity</h2>
-        <ul className={styles.activityList}>
-          <li>Latest post...</li>
-          <li>Another activity...</li>
-          {/* Map over recent posts and comments */}
-        </ul>
-      </section>
-      <section className={styles.notifications}>
-        <h2>Notifications</h2>
-        <ul className={styles.notificationList}>
-          <li>New comment on your post...</li>
-          <li>Someone liked your post...</li>
-          {/* Map over notifications */}
-        </ul>
-      </section>
-      <section className={styles.quickLinks}>
-        <h2>Quick Links</h2>
-        <ul className={styles.quickLinksList}>
-          <li><Link href="/create-post">Create New Post</Link></li>
-          <li><Link href="/profile">Manage Profile</Link></li>
-          <li><Link href="/explore">Explore Content</Link></li>
-        </ul>
-      </section>
+
+        {/* Discover More */}
+        <div className="col-span-1">
+          <div className="border rounded-md p-4">
+            <div className="border-b pb-2">
+              <h2 className="text-xl font-bold">Discover More</h2>
+              <p className="text-sm text-muted">
+                Browse and filter content by category, author, or search.
+              </p>
+            </div>
+            <div className="pt-2">
+              <div className="grid gap-4">
+                <div className="flex items-center gap-2">
+                  <button className="bg-outline text-sm py-2 px-4 rounded">
+                    Technology
+                  </button>
+                  <button className="bg-outline text-sm py-2 px-4 rounded">
+                    Design
+                  </button>
+                  <button className="bg-outline text-sm py-2 px-4 rounded">
+                    Productivity
+                  </button>
+                </div>
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-start gap-4">
+                    <div className="shrink-0 w-16 h-16 rounded-full bg-muted" />
+                    <div>
+                      <h4 className="font-medium">Article Title</h4>
+                      <p className="text-muted-foreground text-sm">
+                        Author Name • 2 hours ago
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content Analytics */}
+        <div className="col-span-1 md:col-span-2">
+          <div className="border rounded-md p-4">
+            <div className="border-b pb-2">
+              <h2 className="text-xl font-bold">Content Analytics</h2>
+              <p className="text-sm text-muted">
+                Insights into your content performance and audience.
+              </p>
+            </div>
+            <div className="pt-2">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-muted rounded-lg p-4 flex flex-col items-start gap-2">
+                  <div className="text-4xl font-bold text-black">1.2K</div>
+                  <div className="text-muted-foreground">Views</div>
+                </div>
+                <div className="bg-muted rounded-lg p-4 flex flex-col items-start gap-2">
+                  <div className="text-4xl font-bold text-black">234</div>
+                  <div className="text-muted-foreground">Likes</div>
+                </div>
+                <div className="bg-muted rounded-lg p-4 flex flex-col items-start gap-2">
+                  <div className="text-4xl font-bold text-black">78</div>
+                  <div className="text-muted-foreground">Comments</div>
+                </div>
+                <div className="bg-muted rounded-lg p-4 flex flex-col items-start gap-2">
+                  <div className="text-4xl font-bold text-black">15%</div>
+                  <div className="text-muted-foreground">Engagement Rate</div>
+                </div>
+              </div>
+              <hr className="my-6" />
+              <div className="grid gap-4">
+                <div>
+                  <h4 className="text-lg font-medium">
+                    Top Performing Content
+                  </h4>
+                  <div className="grid gap-4 mt-4">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="flex items-start gap-4">
+                        <div className="shrink-0 w-16 h-16 rounded-full bg-muted" />
+                        <div>
+                          <h5 className="font-medium">Article Title</h5>
+                          <p className="text-muted-foreground text-sm">
+                            1.2K views • 234 likes
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="text-lg font-medium">Audience Insights</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                    <div className="bg-muted rounded-lg p-4 flex flex-col items-start gap-2">
+                      <div className="text-4xl font-bold text-black">45%</div>
+                      <div className="text-muted-foreground">Female</div>
+                    </div>
+                    <div className="bg-muted rounded-lg p-4 flex flex-col items-start gap-2">
+                      <div className="text-4xl font-bold text-black">55%</div>
+                      <div className="text-muted-foreground">Male</div>
+                    </div>
+                    <div className="bg-muted rounded-lg p-4 flex flex-col items-start gap-2">
+                      <div className="text-4xl font-bold text-black">18-24</div>
+                      <div className="text-muted-foreground">Age Group</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
       <FooterBottom />
     </div>
   );
-}
+};
+
+export default Dashboard;

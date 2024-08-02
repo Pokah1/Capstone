@@ -1,13 +1,16 @@
- import React from "react";
- 
- 
- const FooterBottom = () => {
-   return(
-   
-   <div className="text-center mt-12 text-white mb-2.25 mb-7" >
-   <p className="text-sm">&copy; {new Date().getFullYear()} Chatter. All rights reserved.</p>
- </div>
- )
-}
+import React from "react";
+import PropTypes from "prop-types";
+
+const FooterBottom = ({ className = "" }) => {
+  return (
+    <div className={`text-center mt-12 mb-2.25 ${className}`}>
+      <p className="text-sm text-black">&copy; {new Date().getFullYear()} Chatter. All rights reserved.</p>
+    </div>
+  );
+};
+
+FooterBottom.propTypes = {
+  className: PropTypes.string,
+};
 
 export default FooterBottom;

@@ -8,11 +8,11 @@
     height: 100vh;
     display: flex;
     flex-direction: column;
-    background: #161a2d;
+    background: #0f152b;
     overflow-x: hidden;
     padding: 20px 18px;
     transition: all 0.4s ease;
-   
+   border-right: 0.5px solid #ffffff33;
 }
 
 .sidebar:hover {
@@ -32,7 +32,8 @@
 }
 
 .sidebar .sidebarHeader h2 {
-    color: #e8e511;
+    font-family: "Playfair Display", serif;
+    color: #fff;
     font-size: 1.7rem;
     font-weight: 600;
     margin-left: -35px;
@@ -65,7 +66,7 @@
 
 .sidebar:hover .sidebarLinks h4 span {
     opacity: 1;
-    color: rgb(164, 162, 26);
+    color: #ffffff8d;
 }
 
 .sidebarLinks .menuSeperator {
@@ -122,9 +123,9 @@
 }
 
 .sidebarLinks li a:hover {
-    color: #161a2d;
+    color: #f2f3f7;
     border-radius: 4px;
-    background: #fff;
+    background: #ffffff63;
 }
 
 .userAccount {

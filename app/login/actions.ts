@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-
 import { createClient } from '@/utils/supabase/server'
+
 import { Provider } from '@supabase/supabase-js'
 import { getURL } from '@/utils/helper'
 
@@ -35,7 +35,7 @@ export async function signup(formData: FormData) {
   const data = {
     email: formData.get('email') as string,
     password: formData.get('password') as string,
-  }
+  };
 
   const { error } = await supabase.auth.signUp(data)
 
@@ -44,7 +44,7 @@ export async function signup(formData: FormData) {
   }
 
   revalidatePath('/', 'layout')
-  redirect('/login')
+  redirect('/login?message=check-email')
 }
 
 export async function signout() {

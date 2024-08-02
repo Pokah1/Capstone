@@ -11,6 +11,14 @@ if (!supabaseKey) {
     throw new Error('Missing SUPABASE_ANON_KEY');
 }
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      storageKey: 'supabase.auth.token',
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+  });
 
 export default supabase;
+
+

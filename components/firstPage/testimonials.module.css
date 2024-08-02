@@ -71,4 +71,11 @@ font-size: 1.3rem;
       transform: translateY(0);
     }
   }
+  .title{
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    font-family: "Playfair Display", serif;
+    color: #333;
+  }
  

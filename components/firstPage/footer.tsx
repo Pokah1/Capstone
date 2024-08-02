@@ -1,8 +1,7 @@
 'use client';
-import React from 'react';
+import React, { FormEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import styles from '@/components/firstPage/footer.module.css';
 import Logo from '@/app/assets/logo.png';
 import LinkedInIcon from '@/app/assets/linkedin.svg';
 import TwitterIcon from '@/app/assets/twitter.svg';
@@ -59,62 +58,74 @@ const Footer: React.FC = () => {
     },
   ];
 
-  return (
-    <footer className={styles.footer}>
-      <div className={styles.container}>
-        <section className={styles.section}>
-          <Image src={Logo} alt='company Logo' className={styles.logoIcon} priority/>
+  const handleEmailSubmission = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // Prevent default form submission
 
-          <div className={styles.flexContainer}>
+    const form = e.currentTarget;
+    const email = (form.elements.namedItem('email') as HTMLInputElement).value;
+
+    alert(`Subscribed: ${email}`);
+    console.log(`Subscribed: ${email}`);
+    // Optionally, you can clear the form or give feedback to the user
+    form.reset();
+  };
+
+  return (
+    <footer className="bg-[url('/assets/background.svg')] bg-cover bg-center min-h-screen flex flex-col text-black font-poppins p-4">
+      <div className="flex flex-col items-center">
+        <section className="my-8 mx-12 p-5">
+          <Image src={Logo} alt='company Logo' className="w-[11%] h-[11%]" priority/>
+
+          <div className="flex flex-wrap justify-around mt-8">
             {/* Quick Links */}
-            <div className={styles.column}>
-              <h2 className={styles.heading}>Quick Links</h2>
-              <ul className={styles.list}>
-                <li className={styles.listItem}>
-                  <Link href="/" className={styles.link}>Home</Link>
+            <div className="min-w-[250px] my-4">
+              <h2 className="text-xl font-semibold mb-4">Quick Links</h2>
+              <ul className="list-none p-0">
+                <li className="mb-2 text-lg">
+                  <Link href="/" className="no-underline">Home</Link>
                 </li>
-                <li className={styles.listItem}>
-                  <Link href="/" className={styles.link}>About</Link>
+                <li className="mb-2 text-lg">
+                  <Link href="/" className="no-underline">About</Link>
                 </li>
-                <li className={styles.listItem}>
-                  <Link href="/" className={styles.link}>Features</Link>
+                <li className="mb-2 text-lg">
+                  <Link href="/" className="no-underline">Features</Link>
                 </li>
-                <li className={styles.listItem}>
-                  <Link href="/" className={styles.link}>Community</Link>
+                <li className="mb-2 text-lg">
+                  <Link href="/" className="no-underline">Community</Link>
                 </li>
-                <li className={styles.listItem}>
-                  <Link href="/" className={styles.link}>Blog</Link>
+                <li className="mb-2 text-lg">
+                  <Link href="/" className="no-underline">Blog</Link>
                 </li>
-                <li className={styles.listItem}>
-                  <Link href="/" className={styles.link}>Contact Us</Link>
+                <li className="mb-2 text-lg">
+                  <Link href="/" className="no-underline">Contact Us</Link>
                 </li>
               </ul>
             </div>
             {/* Social Media */}
-            <div className={styles.column}>
-              <h2 className={styles.heading}>Follow Us</h2>
-              <p className={styles.description}>Stay connected with Chatter on social media for the latest updates and engaging content.</p>
-              <div className={`${styles.socialIcons} ${styles.slideIn}`}>
+            <div className="min-w-[250px] my-4">
+              <h2 className="text-xl font-semibold mb-4">Follow Us</h2>
+              <p className="mb-4 text-lg">Stay connected with Chatter on social media for the latest updates and engaging content.</p>
+              <div className="flex gap-6">
                 {socialMediaLinks.map((link, index) => (
-                  <a key={index} href={link.href} target="_blank" rel="noopener noreferrer" className={styles.icon}>
+                  <a key={index} href={link.href} target="_blank" rel="noopener noreferrer" className="w-11 h-11">
                     <link.Icon width={30} height={30} aria-label={link.alt} />
                   </a>
                 ))}
               </div>
             </div>
             {/* Newsletter Signup */}
-            <div className={styles.column}>
-              <h2 className={styles.heading}>Newsletter Signup</h2>
-              <p className={styles.description}>Subscribe to our newsletter for the latest updates and stories from Chatter.</p>
-              <form action="#" method="POST" className={styles.form}>
+            <div className="min-w-[250px] my-4">
+              <h2 className="text-xl font-semibold mb-4">Newsletter Signup</h2>
+              <p className="mb-4 text-lg">Subscribe to our newsletter for the latest updates and stories from Chatter.</p>
+              <form onSubmit={handleEmailSubmission} className="flex flex-col">
                 <input
                   type="email"
                   name="email"
                   placeholder="Enter your email"
-                  className={styles.input}
+                  className="p-2 rounded border border-gray-300 mb-2 w-[80%] h-10"
                   required
                 />
-                <button type="submit" className={styles.button}>
+                <button type="submit" className="bg-[#2b6cb0] text-white p-2 rounded w-[80%] h-10 text-sm mt-3">
                   Subscribe
                 </button>
               </form>
@@ -123,7 +134,7 @@ const Footer: React.FC = () => {
 
           {/* Testimonial Component */}
           <Testimonial testimonials={testimonials} />
-<FooterBottom/>
+          <FooterBottom/>
         </section>
       </div>
     </footer>

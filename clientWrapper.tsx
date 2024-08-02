@@ -16,7 +16,7 @@ export default function ClientWrapper({ children }: { children: React.ReactNode 
     const sideNavRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        console.log('Current Path:', pathname);
+       
         const currentPath = pathname === '/' ? pathname : pathname.replace(/\/$/, ''); // Handle root path separately
         const shouldShowSideNav = !excludedPaths.includes(currentPath);
         setShowSideNav(shouldShowSideNav);

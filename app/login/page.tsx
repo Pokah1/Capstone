@@ -69,6 +69,7 @@ export default async function Login({
             name="password"
             placeholder="••••••••"
             required
+            autoComplete="current-password"
           />
           <SubmitButton
             formAction={signin}
