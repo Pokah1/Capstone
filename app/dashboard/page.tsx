@@ -10,9 +10,6 @@ const BarChart = dynamic(() => import("@/components/charts/barChart"), {
   ssr: false,
 });
 
-interface DashboardProps {
-  data: any; // Adjust this type based on your data structure
-}
 
 const barData = {
   labels: ["January", "February", "March", "April", "May", "June"],
@@ -27,7 +24,7 @@ const barData = {
   ],
 };
 
-const Dashboard: React.FC<DashboardProps> = async () => {
+const Dashboard = async () => {
   const supabase = createClient();
 
   const {
