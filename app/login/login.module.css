@@ -21,6 +21,6 @@
 }
 @media (min-width: 640px) {
     .flexColumn {
-      max-width: 24rem; /* Equivalent to sm:max-w-md in Tailwind */
+      max-width: 24rem; 
     }
   }

@@ -17,6 +17,10 @@ export interface Profile {
 export type User = SupabaseUser & { email?: string };
 
 
+
+
+
+
 //Post types
 export interface Post{
   id?: string; // Make id optional

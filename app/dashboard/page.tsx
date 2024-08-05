@@ -1,7 +1,6 @@
 // pages/dashboard2.tsx
 import Link from "next/link";
 import Image from "next/image";
-import profileIcon from "@/app/assets/profile-pic.jpg";
 import AuthButton from "@/components/AuthButton";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
@@ -31,6 +30,9 @@ const barData = {
 };
 
 const Dashboard: React.FC<DashboardProps> = async () => {
+
+
+  
   const supabase = createClient();
 
   const {
@@ -43,46 +45,33 @@ const Dashboard: React.FC<DashboardProps> = async () => {
   }
 
   return (
-    <div className="flex flex-col h-screen text-white p-2.5 w-[95%] box-border mb-3">
+    <div className="flex flex-col h-full text-white p-2.5 w-[95%] box-border mb-6">
       {/* Header */}
-      <header className="bg-primary text-primary-foreground py-4 px-6 flex flex-wrap items-center justify-between">
+      <header className="bg-primary text-primary-foreground py-4 px-6 flex flex-col md:flex-row items-center justify-between -mt-9">
   <div className="flex items-center gap-4">
-    <nav className="hidden md:flex items-center gap-6">
+    {/* Navigation for both mobile and desktop */}
+    <nav className="flex flex-wrap items-center gap-6">
       <Link href="/content">
         <button className="bg-white text-black py-2 px-4 rounded-lg border border-gray-300 hover:bg-blue-950 hover:text-white">
           Write ✍️
         </button>
       </Link>
+      <Link href="/about">
+        <p className="hover:text-accent hover:underline">About</p>
+      </Link>
       <Link href="/discover">
         <p className="hover:text-accent hover:underline">Discover</p>
       </Link>
-      <Link href="/categories">
-        <p className="hover:text-accent hover:underline">Categories</p>
-      </Link>
-      <Link href="/analytics">
-        <p className="hover:text-accent hover:underline">Analytics</p>
-      </Link>
-    </nav>
-    <nav className="flex md:hidden items-center gap-6">
-      {/* <!-- Mobile menu items or hamburger menu --> */}
     </nav>
   </div>
-  <div className="flex items-center gap-4">
+  <div className="flex items-center gap-4 mt-4 md:mt-0">
     <button className="bg-white text-black py-2 px-4 rounded-lg border border-gray-300 hover:bg-red-950 hover:text-white">
       Upgrade to Pro
     </button>
     <AuthButton />
-    <div className="flex items-center">
-      <Image
-        src={user.user_metadata?.avatar_url || profileIcon}
-        alt="Profile"
-        width={50}
-        height={50}
-        className="rounded-full"
-      />
-    </div>
   </div>
 </header>
+
 
       {/* Main Content */}
       <main className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
@@ -254,7 +243,7 @@ const Dashboard: React.FC<DashboardProps> = async () => {
           </div>
         </div>
       </main>
-      <FooterBottom />
+      <FooterBottom className="text-white " />
     </div>
   );
 };

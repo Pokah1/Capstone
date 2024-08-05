@@ -134,7 +134,7 @@ const Footer: React.FC = () => {
 
           {/* Testimonial Component */}
           <Testimonial testimonials={testimonials} />
-          <FooterBottom/>
+          <FooterBottom className='text-red-600'/>
         </section>
       </div>
     </footer>

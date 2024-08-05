@@ -3,8 +3,8 @@ import { Post } from '@/types';
 
 const supabase = createClient();
 
-export const savePost = async ({ user_id, title, content,  cover_url }: Partial<Post>) => {
-  if (!user_id) {
+export const savePost = async ({  title, content,  cover_url }: Partial<Post>) => {
+  if (!title) {
     throw new Error('userId is required');
   }
 
@@ -12,7 +12,7 @@ export const savePost = async ({ user_id, title, content,  cover_url }: Partial<
     .from('posts')
     .insert([
       {
-        user_id: user_id,
+      
         title,
         content,
         cover_url:  cover_url || null,

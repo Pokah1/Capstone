@@ -1,22 +1,23 @@
 'use client'
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import dynamic from 'next/dynamic';
-import { stringify } from 'flatted';
 import { useRouter } from 'next/navigation';
-import supabase from '@/utils/supabase/client'; // Ensure this import is correct
+import supabase from '@/utils/supabase/client';
 import styles from '@/app/content/content.module.css';
 import Cover from '@/components/contentEditor/cover';
 import FooterBottom from '@/components/firstPage/footerBottom';
 import Button from '@/components/NavButtons';
 import { PartialBlock } from '@blocknote/core';
+import { stringify } from 'flatted';
 
 const EditorPage = () => {
-  const [coverUrl, setCoverUrl] = useState<string>();
+  const [coverUrl, setCoverUrl] = useState<string>('');
   const [title, setTitle] = useState<string>('');
   const [content, setContent] = useState<string>('');
-  const [postId, setPostId] = useState<string | null>(null); // For updating existing posts
+  const [posts, setPosts] = useState<any[]>([]);
+  const [selectedPost, setSelectedPost] = useState<any | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const router = useRouter();
 
@@ -36,6 +37,17 @@ const EditorPage = () => {
     fetchUserId();
   }, []);
   
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const response = await fetch('/api/posts');
+      const { data } = await response.json();
+      setPosts(data);
+    };
+
+    fetchPosts();
+  },[]);
+
   const enableCover = async () => {
     const response = await fetch('https://images.unsplash.com/photo-1487017159836-4e23ece2e4cf?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
     const randomImage = await response.json();
@@ -43,20 +55,16 @@ const EditorPage = () => {
   };
 
   const handleSave = async () => {
-    if (!userId) {
-      alert('User is not authenticated');
-      return;
-    }
-
     try {
       const response = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, content, coverUrl, userId }),
+        body: JSON.stringify({ title, content, coverUrl }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save content');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save content');
       }
 
       alert('Content saved successfully!');
@@ -68,19 +76,20 @@ const EditorPage = () => {
   };
 
   const handleUpdate = async () => {
-    if (!postId) {
-      throw new Error('Post ID is required to update a post');
+    if (!selectedPost) {
+      throw new Error('No post selected for updating');
     }
 
     try {
       const response = await fetch('/api/posts', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: postId, title, content, coverUrl }),
+        body: JSON.stringify({ id: selectedPost.id, title, content, coverUrl }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update content');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update content');
       }
 
       alert('Content updated successfully!');
@@ -92,19 +101,20 @@ const EditorPage = () => {
   };
 
   const handleDelete = async () => {
-    if (!postId) {
-      throw new Error('Post ID is required to delete a post');
+    if (!selectedPost) {
+      throw new Error('No post selected for deletion');
     }
 
     try {
       const response = await fetch('/api/posts', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: postId }),
+        body: JSON.stringify({ id: selectedPost.id }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete content');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete content');
       }
 
       alert('Content deleted successfully!');
@@ -116,9 +126,8 @@ const EditorPage = () => {
   };
 
   const handleEditorChange = (blocks: PartialBlock[]) => {
-    // Convert blocks to a JSON string
     const contentString = stringify(blocks);
-    setContent(contentString); // Save the string representation of blocks
+    setContent(contentString);
   };
 
   const Editor = useMemo(() => dynamic(() => import('@/components/contentEditor/editor'), { ssr: false }), []);

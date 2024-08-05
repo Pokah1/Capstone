@@ -83,14 +83,15 @@ const Header = () => {
               </Link>
             </li>
             <li>
-              <button className="ml-6 bg-transparent border border-gray-400 rounded px-4 py-2 text-white transition-colors duration-200 hover:bg-white hover:text-black">
-                <Link
-                  href={"/login"}
-                  className="text-white no-underline text-lg hover:text-black"
-                >
-                  Sign-Up
-                </Link>
-              </button>
+            <button className="mt-[-8px] ml-[25px] bg-transparent border border-gray-400 rounded-[5px] cursor-pointer w-[100px] h-[40px] transition-colors duration-200 hover:bg-white hover:text-black">
+  <Link
+    href={"/login"}
+    className="text-inherit no-underline text-lg"
+  >
+    Sign-Up
+  </Link>
+</button>
+
             </li>
           </ul>
         </nav>

@@ -1,3 +1,4 @@
+// utils/profilesQuery.ts
 import { createClient } from '@/utils/supabase/server';
 import { Profile } from '@/types';
 
@@ -9,7 +10,7 @@ export const saveProfile = async ({
   role,
   bio,
   profile_picture,
-}: Partial<Profile>) =>{
+}: Partial<Profile>) => {
   if (!user_id) {
     throw new Error('user_id is required');
   }
@@ -32,6 +33,3 @@ export const saveProfile = async ({
 
   return data;
 };
-
-// Add other queries for other tables as needed, for example:
-// 
