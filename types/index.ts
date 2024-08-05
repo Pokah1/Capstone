@@ -1,6 +1,6 @@
 // types/index.ts
 
-import { User as SupabaseUser } from '@supabase/supabase-js';
+
 
 //Profiles types
 export interface Profile {
@@ -14,7 +14,7 @@ export interface Profile {
   profile_picture?: string | null; 
 }
 
-export type User = SupabaseUser & { email?: string };
+
 
 
 
@@ -30,5 +30,5 @@ export interface Post{
   cover_url?: string;
   created_at?: string;
   updated_at?: string;
-  user?: User;
+  user?: string;
 }
