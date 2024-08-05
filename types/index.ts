@@ -1,6 +1,6 @@
 // types/index.ts
 
-
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 //Profiles types
 export interface Profile {
@@ -14,15 +14,8 @@ export interface Profile {
   profile_picture?: string | null; 
 }
 
-
-
-
-
-
-
-
-//Post types
-export interface Post{
+// Post types
+export interface Post {
   id?: string; // Make id optional
   user_id: string;
   title: string;
@@ -30,5 +23,5 @@ export interface Post{
   cover_url?: string;
   created_at?: string;
   updated_at?: string;
-  user?: string;
+  user?: SupabaseUser;
 }
