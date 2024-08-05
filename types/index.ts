@@ -1,6 +1,6 @@
 // types/index.ts
 
-import { User as SupabaseUser } from '@supabase/auth-js';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 //Profiles types
 export interface Profile {
