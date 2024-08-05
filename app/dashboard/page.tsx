@@ -1,7 +1,7 @@
-import Link from "next/link";
-import AuthButton from "@/components/AuthButton";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import AuthButton from "@/components/AuthButton";
 import FooterBottom from "@/components/firstPage/footerBottom";
 import dynamic from "next/dynamic";
 
@@ -9,7 +9,6 @@ import dynamic from "next/dynamic";
 const BarChart = dynamic(() => import("@/components/charts/barChart"), {
   ssr: false,
 });
-
 
 const barData = {
   labels: ["January", "February", "March", "April", "May", "June"],
@@ -33,7 +32,6 @@ const Dashboard = async () => {
 
   if (!user) {
     redirect("/");
-    return null; // To ensure no further rendering occurs
   }
 
   return (
@@ -80,9 +78,7 @@ const Dashboard = async () => {
           <div className="flex flex-wrap justify-center gap-5 ">
             <div className="flex-1 min-w-[400px] max-w-[400px] rounded-lg p-5 shadow-md border pb-2 mt-3">
               <h2 className="text-2xl mb-2 text-white">Monthly Posts</h2>
-              {/* Import */}
               <BarChart data={barData} />
-
               <p className="text-base text-white mt-2">
                 The Monthly Posts chart illustrates the volume of content
                 created each month. A consistent increase indicates growing user
@@ -188,52 +184,18 @@ const Dashboard = async () => {
                 </div>
                 <div className="bg-muted rounded-lg p-4 flex flex-col items-start gap-2">
                   <div className="text-4xl font-bold text-black">15%</div>
-                  <div className="text-muted-foreground">Engagement Rate</div>
-                </div>
-              </div>
-              <hr className="my-6" />
-              <div className="grid gap-4">
-                <div>
-                  <h4 className="text-lg font-medium">
-                    Top Performing Content
-                  </h4>
-                  <div className="grid gap-4 mt-4">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                      <div key={i} className="flex items-start gap-4">
-                        <div className="shrink-0 w-16 h-16 rounded-full bg-muted" />
-                        <div>
-                          <h5 className="font-medium">Article Title</h5>
-                          <p className="text-muted-foreground text-sm">
-                            1.2K views • 234 likes
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <h4 className="text-lg font-medium">Audience Insights</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                    <div className="bg-muted rounded-lg p-4 flex flex-col items-start gap-2">
-                      <div className="text-4xl font-bold text-black">45%</div>
-                      <div className="text-muted-foreground">Female</div>
-                    </div>
-                    <div className="bg-muted rounded-lg p-4 flex flex-col items-start gap-2">
-                      <div className="text-4xl font-bold text-black">55%</div>
-                      <div className="text-muted-foreground">Male</div>
-                    </div>
-                    <div className="bg-muted rounded-lg p-4 flex flex-col items-start gap-2">
-                      <div className="text-4xl font-bold text-black">18-24</div>
-                      <div className="text-muted-foreground">Age Group</div>
-                    </div>
-                  </div>
+                  <div className="text-muted-foreground">Conversion</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </main>
-      <FooterBottom className="text-white " />
+
+      {/* Footer */}
+      <footer>
+        <FooterBottom />
+      </footer>
     </div>
   );
 };
