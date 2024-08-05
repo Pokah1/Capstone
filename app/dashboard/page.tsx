@@ -1,6 +1,4 @@
-// pages/dashboard2.tsx
 import Link from "next/link";
-import Image from "next/image";
 import AuthButton from "@/components/AuthButton";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
@@ -30,9 +28,6 @@ const barData = {
 };
 
 const Dashboard: React.FC<DashboardProps> = async () => {
-
-
-  
   const supabase = createClient();
 
   const {
@@ -48,30 +43,29 @@ const Dashboard: React.FC<DashboardProps> = async () => {
     <div className="flex flex-col h-full text-white p-2.5 w-[95%] box-border mb-6">
       {/* Header */}
       <header className="bg-primary text-primary-foreground py-4 px-6 flex flex-col md:flex-row items-center justify-between -mt-9">
-  <div className="flex items-center gap-4">
-    {/* Navigation for both mobile and desktop */}
-    <nav className="flex flex-wrap items-center gap-6">
-      <Link href="/content">
-        <button className="bg-white text-black py-2 px-4 rounded-lg border border-gray-300 hover:bg-blue-950 hover:text-white">
-          Write ✍️
-        </button>
-      </Link>
-      <Link href="/about">
-        <p className="hover:text-accent hover:underline">About</p>
-      </Link>
-      <Link href="/discover">
-        <p className="hover:text-accent hover:underline">Discover</p>
-      </Link>
-    </nav>
-  </div>
-  <div className="flex items-center gap-4 mt-4 md:mt-0">
-    <button className="bg-white text-black py-2 px-4 rounded-lg border border-gray-300 hover:bg-red-950 hover:text-white">
-      Upgrade to Pro
-    </button>
-    <AuthButton />
-  </div>
-</header>
-
+        <div className="flex items-center gap-4">
+          {/* Navigation for both mobile and desktop */}
+          <nav className="flex flex-wrap items-center gap-6 mt-7">
+            <Link href="/content">
+              <button className="bg-white text-black py-2 px-4 rounded-lg border border-gray-300 hover:bg-blue-950 hover:text-white">
+                Write ✍️
+              </button>
+            </Link>
+            <Link href="/about">
+              <p className="hover:text-accent hover:underline">About</p>
+            </Link>
+            <Link href="/discover">
+              <p className="hover:text-accent hover:underline">Discover</p>
+            </Link>
+          </nav>
+        </div>
+        <div className="flex items-center gap-4 mt-4 md:mt-0">
+          <button className="bg-white text-black py-2 px-4 rounded-lg border border-gray-300 hover:bg-red-950 hover:text-white">
+            Upgrade to Pro
+          </button>
+          <AuthButton />
+        </div>
+      </header>
 
       {/* Main Content */}
       <main className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
@@ -87,20 +81,19 @@ const Dashboard: React.FC<DashboardProps> = async () => {
             />
           </section>
           <div className="flex flex-wrap justify-center gap-5 ">
-          <div className="flex-1 min-w-[400px] max-w-[400px] rounded-lg p-5 shadow-md border pb-2 mt-3">
-            <h2 className="text-2xl mb-2 text-white">Monthly Posts</h2>
-            {/* Import */}
-            <BarChart data={barData} />
+            <div className="flex-1 min-w-[400px] max-w-[400px] rounded-lg p-5 shadow-md border pb-2 mt-3">
+              <h2 className="text-2xl mb-2 text-white">Monthly Posts</h2>
+              {/* Import */}
+              <BarChart data={barData} />
 
-            <p className="text-base text-white mt-2">
-              The Monthly Posts chart illustrates the volume of content created
-              each month. A consistent increase indicates growing user activity
-              and content creation.
-            </p>
+              <p className="text-base text-white mt-2">
+                The Monthly Posts chart illustrates the volume of content
+                created each month. A consistent increase indicates growing user
+                activity and content creation.
+              </p>
+            </div>
           </div>
         </div>
-        </div>
-       
 
         {/* Personalized Feed */}
         <div className="col-span-1">
