@@ -23,18 +23,20 @@
    padding: 5px;
    color: #f9f9fb;
    border: 0.5px solid #f9f9fb2a  ;
+   border-radius: 0.375rem; 
     font-size: 2rem; 
     font-weight: bold; 
     font-family: "Playfair Display", serif;
   }
 .textarea::placeholder{
-   color: #c9c9e33f;
-  
+   color: rgba(251, 255, 0, 0.194);
+ 
 }  
   .group{
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+  
   }
   .hiddenContent {
     opacity: 0;

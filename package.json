@@ -28,7 +28,6 @@
     "react-chartjs-2": "^5.2.0",
     "react-dom": "18.2.0",
     "react-simple-typewriter": "^5.0.1",
-    "react-textarea-autosize": "^8.5.3",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "5.3.3",
