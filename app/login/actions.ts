@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/server'
 
 import { Provider } from '@supabase/supabase-js'
 import { getURL } from '@/utils/helper'
+import { headers } from 'next/headers'
 
 export async function signin(formData: FormData) {
   const supabase = createClient()
@@ -32,12 +33,22 @@ export async function signup(formData: FormData) {
 
   // type-casting here for convenience
   // in practice, you should validate your inputs
-  const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
-  };
+  const origin = headers
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
+  const confirmPassword = formData.get('confirmPassword') as string;
 
-  const { error } = await supabase.auth.signUp(data)
+  if (password!== confirmPassword) {
+    redirect("/login?message=Passwords do not match")
+  }
+
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options:{
+      emailRedirectTo: `${origin}/auth/callback`,
+    }
+  })
 
   if (error) {
     redirect("/login?message=Error Signing Up")

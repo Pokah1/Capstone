@@ -3,7 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Metadata } from 'next';
-// import "@uploadthing/react/styles.css";
+import "@uploadthing/react/styles.css";
 import ClientWrapper from '@/clientWrapper';
 const inter = Inter({ subsets: ["latin"] });
 

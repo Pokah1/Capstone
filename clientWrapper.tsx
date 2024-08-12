@@ -5,7 +5,8 @@ import { useEffect, useState, useRef } from 'react';
 import SideNav from "@/components/sideNav/sideNav"; 
 import styles from "@/clientWrapper.module.css";
 
-const excludedPaths = ['/', '/login', '/content', '/not-found']; 
+const excludedPaths = ['/', '/login', '/content','/forgot-password', '/not-found', '/about'];
+
 
 export default function ClientWrapper({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();

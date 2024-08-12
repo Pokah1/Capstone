@@ -80,6 +80,21 @@ export default async function Login({
               autoComplete="current-password"
             />
           </div>
+
+          <div>
+            <label className="block text-gray-700 font-medium mb-1" htmlFor="confirmPassword">
+              Confirm Password
+            </label>
+            <input
+              className="w-full px-4 py-2 border rounded-md bg-gray-50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              type="password"
+              name="confirmPassword"
+              placeholder="••••••••"
+              required
+              autoComplete="current-password"
+            />
+          </div>
+
           
           <SubmitButton
             formAction={signin}
@@ -107,7 +122,14 @@ export default async function Login({
         <div className="flex gap-4 mt-5">
       <OAuthButton className="flex-1" />
     </div>
+    <Link
+          href="/forgot-password"
+          className="rounded-md no-underline text-indigo-400 text-sm "
+        >
+          Forgotten Password.
+        </Link>
       </div>
+     
     </main>
   );
 }

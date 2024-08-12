@@ -1,28 +1,32 @@
 'use client'
-import { Pie } from 'react-chartjs-2';
+import { Bar } from 'react-chartjs-2';
 import { ChartData, ChartOptions } from 'chart.js';
 import {
   Chart as ChartJS,
-  ArcElement,
+  CategoryScale,
+  LinearScale,
+  BarElement,
   Title,
   Tooltip,
   Legend,
 } from 'chart.js';
 
 ChartJS.register(
-  ArcElement,
+  CategoryScale,
+  LinearScale,
+  BarElement,
   Title,
   Tooltip,
   Legend
 );
 
-interface PieChartProps {
-  data: ChartData<'pie'>;
-  options?: ChartOptions<'pie'>;
+interface BarChartProps {
+  data: ChartData<'bar'>;
+  options?: ChartOptions<'bar'>;
 }
 
-const PieChart: React.FC<PieChartProps> = ({ data, options }) => {
-  return <Pie data={data} options={options} />;
+const BarChart: React.FC<BarChartProps> = ({ data, options }) => {
+  return <Bar data={data} options={options} />;
 };
 
-export default PieChart;
+export default BarChart;

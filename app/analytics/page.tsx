@@ -1,75 +1,101 @@
-// app/analytics/analytics.tsx
-'use client'
-import React from 'react';
-import BarChart from '@/components/charts/barChart';
-import LineChart from '@/components/charts//lineChart';
-import PieChart from '@/components/charts/pieChart';
+'use client';
 
+import React, { useEffect, useState } from 'react';
+import LineChart from '@/components/charts/lineChart';
+import { createClient } from '@/utils/supabase/client';
 
-
-
-const barData = {
-  labels: ['January', 'February', 'March', 'April', 'May', 'June'],
-  datasets: [
-    {
-      label: 'Monthly Posts',
-      data: [65, 59, 80, 81, 56, 55],
-      backgroundColor: 'rgba(75, 192, 192, 0.2)',
-      borderColor: 'rgba(75, 192, 192, 1)',
-      borderWidth: 1,
-    },
-  ],
-};
-
-const lineData = {
-  labels: ['January', 'February', 'March', 'April', 'May', 'June'],
-  datasets: [
-    {
-      label: 'User Growth',
-      data: [65, 59, 80, 81, 56, 55],
-      fill: false,
-      borderColor: 'rgba(75, 192, 192, 1)',
-      tension: 0.1,
-    },
-  ],
-};
-
-const pieData = {
-  labels: ['Red', 'Blue', 'Yellow'],
-  datasets: [
-    {
-      data: [300, 50, 100],
-      backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-      hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-    },
-  ],
-};
+interface ChartData {
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+    borderColor?: string;
+    borderWidth?: number;
+    fill?: boolean;
+    tension?: number;
+  }[];
+}
 
 const Analytics = () => {
+  const [lineData, setLineData] = useState<ChartData>({
+    labels: [],
+    datasets: [
+      {
+        label: 'User Growth',
+        data: [],
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 2,
+        fill: false,
+        tension: 0.1,
+      },
+    ],
+  });
+
+  const supabase = createClient();
+
+  useEffect(() => {
+    fetchUserSignups();
+  }, []);
+
+  const fetchUserSignups = async () => {
+    const { data: users, error } = await supabase
+      .from('users') // Ensure 'auth.users' is the correct reference
+      .select('created_at');
+
+    if (error) {
+      console.error('Error fetching users:', error);
+      return;
+    }
+
+    // Prepare data for the line chart
+    const monthlyUserData = Array(12).fill(0);
+    users.forEach(user => {
+      const month = new Date(user.created_at).getMonth(); // 0 is January, 11 is December
+      monthlyUserData[month]++;
+    });
+
+    setLineData({
+      labels: [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December',
+      ],
+      datasets: [
+        {
+          label: 'Monthly User Signups',
+          data: monthlyUserData,
+          borderColor: 'rgba(75, 192, 192, 1)',
+          borderWidth: 2,
+          fill: false,
+          tension: 0.1,
+        },
+      ],
+    });
+  };
+
   return (
     <div className="p-5 text-center">
-  <h1 className="text-4xl mb-5 text-white"  >Analytics Dashboard</h1>
-  <div className="mb-5 text-lg text-gray-50">
-    <p>This dashboard provides an overview of user engagement, post distribution, and growth metrics over the past six months.</p>
-  </div>
-  <div  className="flex flex-wrap justify-center gap-5">
-    <div style={{ backgroundColor: '#0f152b' }} className="flex-1 min-w-[300px] max-w-[400px] bg-gray-200 border border-gray-300 rounded-lg p-5 shadow-md">
-      <h2 className="text-2xl mb-2 text-white" >Monthly Posts</h2>
-      <BarChart data={barData} />
-      <p className="text-base text-gray-50 mt-2">The Monthly Posts chart illustrates the volume of content created each month. A consistent increase indicates growing user activity and content creation.</p>
+      <h1 className="text-4xl mb-5 text-white">User Growth Analytics</h1>
+      <div className="mb-5 text-lg text-gray-50">
+        <p>This chart shows the number of new user signups on a monthly basis.</p>
+      </div>
+      <div className="flex flex-wrap justify-center gap-5">
+        <div style={{ backgroundColor: '#0f152b' }} className="flex-1 min-w-[300px] max-w-[400px] border border-gray-300 rounded-lg p-5 shadow-md">
+          <h2 className="text-2xl mb-2 text-white">User Growth</h2>
+          <LineChart data={lineData} />
+          <p className="text-base text-gray-50 mt-2">The User Growth chart highlights the increase in user registrations. Steady growth indicates positive user acquisition trends.</p>
+        </div>
+      </div>
     </div>
-    <div style={{ backgroundColor: '#0f152b' }} className="flex-1 min-w-[300px] max-w-[400px] border border-gray-300 rounded-lg p-5 shadow-md">
-  <h2 className="text-2xl mb-2 text-white">User Growth</h2>
-  <LineChart data={lineData} />
-  <p className="text-base text-gray-50 mt-2">The User Growth chart highlights the increase in user registrations. Steady growth is a positive indicator of the platform popularity and user acquisition efforts.</p>
-</div>
-    <div style={{ backgroundColor: '#0f152b' }} className="flex-1 min-w-[300px] max-w-[400px] bg-gray-200 border border-gray-300 rounded-lg p-5 shadow-md">
-      <h2 className="text-2xl mb-2 text-white">Post Distribution</h2>
-      <PieChart data={pieData} />
-      <p className="text-base text-gray-50 mt-2">The Post Distribution chart shows the breakdown of various content categories. Understanding the distribution helps in identifying popular content types and areas for improvement.</p>
-    </div>
-  </div>
-</div>
   );
 };
 

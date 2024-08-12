@@ -1,9 +1,9 @@
-// // app/profile/page.tsx
+
 
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import FooterBottom from "@/components/firstPage/footerBottom";
-import Image from "next/image";
+
 
 import ProfileSetup from "@/components/ProfileForm";
 
@@ -30,8 +30,5 @@ export default async function ProfilePage() {
     </div>
   );
 }
-
-
-
 
 

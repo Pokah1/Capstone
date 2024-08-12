@@ -23,7 +23,7 @@ const Cover: React.FC<CoverProps> = ({ url, setUrl }) => {
 
                     <div className="absolute w-[20%] h-[20%] right-0 bottom-0 flex justify-center items-center">
                         <UploadButton 
-                            className="your-custom-upload-button-class"  
+                            className="w-fit ut-allowed-content:hidden ut-button:bg-natural-200 ut-button:hover:bg-neutral-300 ut-button:text-neutral-800 ut-button:transition-colors"  
                             endpoint="imageUploader"
                             onClientUploadComplete={(res) =>{
                                 setUrl(res[0].url);

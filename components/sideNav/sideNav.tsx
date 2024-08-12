@@ -1,11 +1,10 @@
 "use client";
-import React, { SVGProps } from 'react';
+import React, { SVGProps, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from '@/components/sideNav/sideNav.module.css';
 import Logo from '@/app/assets/logo.png';
-import profileImage from '@/app/assets/profile-pic.jpg';
 import dashboardIcon from '@/app/assets/dashboard.svg';
 import analyticsIcon from '@/app/assets/analytics.svg';
 import contentIcon from '@/app/assets/content.svg';
@@ -14,16 +13,51 @@ import categoriesIcon from '@/app/assets/category.svg';
 import notificationIcon from '@/app/assets/notifications.svg';
 import profileIcon from '@/app/assets/profile.svg';
 import settingsIcon from '@/app/assets/settings.svg';
-// import logoutIcon from '@/app/assets/logout.svg';
 import socialIcon from '@/app/assets/socials.svg';
+import { createClient } from '@/utils/supabase/client';
+import profileImage from '@/app/assets/profile-pic.jpg'
+import logoutIcon from '@/app/assets/logout.svg'
+
+
+
+
 
 interface SideNavProps {
   id?: string;
 }
 
 const SideNav: React.FC<SideNavProps> = ({ id }) => {
+  const [user, setUser] = useState<any>(null); // Updated to any or appropriate type
   const router = useRouter();
+  const supabase = createClient();
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        if (error) {
+          console.error('Error fetching user:', error);
+        } else {
+          setUser(data.user);
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  const signOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Error signing out:', error);
+    } else {
+      localStorage.clear();
+      setUser(null);
+      router.push('/'); // Redirect to the HomePage
+    }
+  };
 
   interface MenuItems {
     title: string;
@@ -44,7 +78,7 @@ const SideNav: React.FC<SideNavProps> = ({ id }) => {
   const accountItems: MenuItems[] = [
     { title: 'Profile', icon: profileIcon, onClick: () => router.push('/profiles') },
     { title: 'Settings', icon: settingsIcon, onClick: () => router.push('/settings') },
-    // { title: 'Sign Out', icon: logoutIcon, onClick: signOut },
+    { title: 'Logout', icon: logoutIcon, onClick: signOut },
   ];
 
   return (
@@ -85,15 +119,17 @@ const SideNav: React.FC<SideNavProps> = ({ id }) => {
         <div className={styles.userAccount}>
           <div className={styles.userProfile}>
             <Image
-              src={profileImage}
+              src={user?.user_metadata?.avatar_url || profileImage}
               alt="user-profile"
               width={50}
               height={50}
               className={styles.profilePic}
             />
             <div className={styles.userDetails}>
-              <h3>{'John Doe'}</h3>
-              <span>{'Developer'}</span>
+            <span>
+                {user?.user_metadata?.full_name || user?.email || 'Guest'}
+              </span>
+              <span>{user?.role || 'User'}</span>
             </div>
           </div>
         </div>

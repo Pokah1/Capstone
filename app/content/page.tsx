@@ -2,134 +2,101 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
-import supabase from "@/utils/supabase/client";
-import styles from "@/app/content/content.module.css";
-import Cover from "@/components/contentEditor/cover";
+import { createClient } from "@/utils/supabase/client";
+import styles from "@/components/contentEditor/CreateContent.module.css";
 import FooterBottom from "@/components/firstPage/footerBottom";
-import Button from "@/components/NavButtons";
 import { PartialBlock } from "@blocknote/core";
-import { stringify } from "flatted";
+import Cover from "@/components/contentEditor/cover";
+import { extractTextContent } from "@/utils/extractText";
+import { fetchUser } from "@/utils/fetchUser";
+import { fetchPosts } from "@/utils/fetchPosts";
+import { useRouter } from "next/navigation";
+import Button from "@/components/NavButtons";
+import DOMPurify from "dompurify";
 
 const EditorPage = () => {
   const [coverUrl, setCoverUrl] = useState<string>("");
   const [title, setTitle] = useState<string>("");
-  const [content, setContent] = useState<string>("");
+  const [editorContent, setEditorContent] = useState<string>("");
+  const [user, setUser] = useState<any | null>(null);
+  const [plainTextContent, setPlainTextContent] = useState<string>("");
   const [posts, setPosts] = useState<any[]>([]);
   const [selectedPost, setSelectedPost] = useState<any | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [viewCount, setViewCount] = useState<number | null>(null);
+
   const router = useRouter();
+  const supabase = createClient();
 
   useEffect(() => {
-    const fetchUserId = async () => {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
+    const loadUser = async () => {
+      const user = await fetchUser(router);
+      if (user) setUser(user);
+      setLoading(false);
+    };
+    loadUser();
+  }, [router]);
 
-      if (error) {
-        console.error("Error fetching user:", error.message);
-        return;
+
+
+//a function to record users Views
+  async function recordView(post_id: string, user_id: string) {
+    try {
+      const response = await fetch('/api/post-views', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ post_id, user_id }),
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to record view: ${errorText}`);
       }
-
-      console.log("Fetched user:", user);
-      setUserId(user?.id || null);
-    };
-
-    fetchUserId();
-  }, []);
-
-  useEffect(() => {
-    const fetchPosts = async () => {
-      const response = await fetch("/api/posts");
-      const { data } = await response.json();
-      setPosts(data);
-    };
-
-    fetchPosts();
-  }, []);
-
-  const enableCover = async () => {
-    const randomImage = await fetch('https://images.unsplash.com/photo-1487017159836-4e23ece2e4cf?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')
-    setCoverUrl(randomImage.url); 
+  
+      const data = await response.json();
+      console.log('View recorded:', data);
+    } catch (error) {
+      console.error('Error recording view:', error);
+    }
   }
+  
 
-  const handleSave = async () => {
+  useEffect(() => {
+    if (!loading) {
+      fetchPosts();
+    }
+  }, [loading]);
+
+
+
+  //A function to handle changes in the Markdown Editor
+  const handleEditorChange = (updatedContent: string) => {
     try {
-      const response = await fetch("/api/posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, content, coverUrl }),
-      });
+      const blocks = JSON.parse(updatedContent) as PartialBlock[];
+      const plainTextContent = extractTextContent(blocks);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to save content");
-      }
-
-      alert("Content saved successfully!");
-      router.push("/dashboard"); // Redirect after saving
+      setEditorContent(updatedContent);
+      setPlainTextContent(plainTextContent);
     } catch (error) {
-      console.error("Error saving content:", error);
-      alert("Error saving content. Please try again.");
+      console.error("Error parsing editor content:", error);
     }
   };
+ 
 
-  const handleUpdate = async () => {
-    if (!selectedPost) {
-      throw new Error("No post selected for updating");
-    }
-
-    try {
-      const response = await fetch("/api/posts", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: selectedPost.id, title, content, coverUrl }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to update content");
-      }
-
-      alert("Content updated successfully!");
-      router.push("/dashboard"); // Redirect after updating
-    } catch (error) {
-      console.error("Error updating content:", error);
-      alert("Error updating content. Please try again.");
-    }
+  //Default CoverUrl for a post
+  const enableCover = async () => {
+    const response = await fetch(
+      "https://images.unsplash.com/photo-1487017159836-4e23ece2e4cf?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    );
+    const imageUrl = await response.url;
+    setCoverUrl(imageUrl);
   };
 
-  const handleDelete = async () => {
-    if (!selectedPost) {
-      throw new Error("No post selected for deletion");
-    }
 
-    try {
-      const response = await fetch("/api/posts", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: selectedPost.id }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to delete content");
-      }
-
-      alert("Content deleted successfully!");
-      router.push("/dashboard"); // Redirect after deleting
-    } catch (error) {
-      console.error("Error deleting content:", error);
-      alert("Error deleting content. Please try again.");
-    }
-  };
-
-  const handleEditorChange = (blocks: PartialBlock[]) => {
-    const contentString = stringify(blocks);
-    setContent(contentString);
-  };
-
+  //Markdown Editor imported dynamically
   const Editor = useMemo(
     () =>
       dynamic(() => import("@/components/contentEditor/editor"), {
@@ -138,15 +105,122 @@ const EditorPage = () => {
     []
   );
 
+  
+//a function to handle svae after a content has been created
+  const handleSave = async () => {
+    try {
+      console.log("User from supabase:", user);
+
+      if (!user || !user.id) {
+        console.error("User ID is not available");
+        return;
+      }
+
+      console.log("User ID:", user.id);
+
+      const response = await fetch("/api/posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          content: DOMPurify.sanitize(plainTextContent),
+          cover_url: coverUrl,
+          user_id: user.id,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Post saved:", result);
+        setPosts([...posts, result]);
+        setCoverUrl("");
+        setTitle("");
+        setEditorContent("");
+        setPlainTextContent("");
+        setSelectedPost(null);
+        setIsEditing(false);
+        fetchPosts();
+      } else {
+        console.error("Error saving post:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error saving post:", error);
+    }
+  };
+
+  
+
+  // a function to handle events that will be triggerd when a post is clicked
+  const handlePostClick = async (post: any) => {
+    setSelectedPost(post.id === selectedPost?.id ? null : post);
+  
+    if (!isEditing) {
+      setTitle("");
+      setEditorContent("");
+      setPlainTextContent("");
+      setCoverUrl("");
+  
+      if (user && user.id) {
+        await recordView(post.id, user.id);
+        try {
+          const response = await fetch(`/api/post-views/${post.id}/count`);
+          if (response.ok) {
+            const { viewCount } = await response.json();
+            setViewCount(viewCount);
+          } else {
+            console.error("Error fetching view count");
+          }
+        } catch (error) {
+          console.error("Error fetching view count:", error);
+        }
+      } else {
+        console.error("User information is missing.");
+      }
+    } else {
+      // Handle the case where the post is being edited
+      setTitle(post.title || "");
+      setEditorContent(post.content || "");
+      setPlainTextContent(post.content || "");
+      setCoverUrl(post.cover_url || "");
+  
+      // Fetch the view count for the selected post
+      try {
+        const response = await fetch(`/api/post-views/${post.id}/count`);
+        if (response.ok) {
+          const { viewCount } = await response.json();
+          setViewCount(viewCount);
+        } else {
+          console.error("Error fetching view count");
+        }
+      } catch (error) {
+        console.error("Error fetching view count:", error);
+      }
+    }
+  };
+  
+
+  //a funtion to load fetchedPost/
+  //fetchpost is coming from utils folder
+  useEffect(() => {
+    if (!loading) {
+      const loadPosts = async () => {
+        const postsData = await fetchPosts();
+        setPosts(postsData);
+      };
+      loadPosts();
+    }
+  }, [loading]);
+
   return (
     <main className={styles.container}>
       <header className="flex items-center justify-between px-4 py-2 mt-5 mb-7">
         <Button text="Dashboard" />
         <div className="flex-1"></div>
         <div className="flex-1 flex justify-end">
-          <Button text="Save" onClick={handleSave} />
-          <Button text="Update" onClick={handleUpdate} />
-          <Button text="Delete" onClick={handleDelete} />
+          <Button text="Publish" onClick={handleSave} />
+
         </div>
       </header>
 
@@ -156,7 +230,7 @@ const EditorPage = () => {
           {!coverUrl && (
             <div className={styles.hiddenContent}>
               <button className={styles.button} onClick={enableCover}>
-                🖼️ Add Image
+                📷 Add Cover
               </button>
             </div>
           )}
@@ -170,30 +244,76 @@ const EditorPage = () => {
           </div>
         </div>
 
-        <Editor onChange={handleEditorChange} />
+        <Editor
+          onChange={handleEditorChange}
+          initialContent={JSON.stringify(editorContent)}
+          editable={true}
+        />
       </div>
-      <div className={styles.aside}>
-        <section className={`${styles.section} ${styles.toDoList}`}>
-          <h2>To-Do List</h2>
-          <input type="text" placeholder="New task..." />
-          <button>Add</button>
-          <ul className={styles.list}>
-            <li className={styles.listItem}>Finish project</li>
-            <li className={styles.listItem}>Review PR</li>
-          </ul>
-        </section>
-        <section className={styles.section}>
-          <h2>Statistics</h2>
-          {/* Statistics content here */}
-        </section>
-        <section className={styles.section}>
-          <h2>Calendar</h2>
-          <ul className={styles.list}>
-            <li className={styles.listItem}>Event 1: July 20</li>
-            <li className={styles.listItem}>Event 2: July 21</li>
-          </ul>
-        </section>
-      </div>
+      <section>
+        <h1 className="text-white text-2xl mb-4">Posts</h1>
+        <ul className="space-y-4">
+          {posts && posts.length > 0 ? (
+            posts.map((post) => (
+              <li
+                key={post.id}
+                onClick={() => handlePostClick(post)}
+                className={`cursor-pointer p-4 border
+ rounded-lg transition-all duration-300 ease-in-out ${
+   selectedPost?.id === post.id
+     ? "border-blue-500 bg-gray-800"
+     : "border-gray-600 hover:border-blue-500 hover:bg-gray-700"
+ }`}
+              >
+                {selectedPost?.id !== post.id ? (
+                  <div className="flex items-center">
+                    {post.cover_url && (
+                      <img
+                        src={post.cover_url}
+                        alt={post.title}
+                        className="w-16 h-16 object-cover rounded mr-4"
+                      />
+                    )}
+                    <div>
+                      <h1 className="font-bold text-lg text-white">
+                        {post.title}
+                      </h1>
+                      <p className="text-gray-400">
+                        {post.content ? post.content.slice(0, 80) : ""}...
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    {post.cover_url && (
+                      <img
+                        src={post.cover_url}
+                        alt={post.title}
+                        className="w-full max-w-md h-auto object-cover rounded mb-4 mx-auto"
+                      />
+                    )}
+                    <h1 className="font-bold text-xl text-white mb-2">
+                      {post.title}
+                    </h1>
+                    <div
+                      className="text-gray-300"
+                      dangerouslySetInnerHTML={{
+                        __html: DOMPurify.sanitize(post.content),
+                      }}
+                    />
+                    <div className="text-gray-600 mt-2 font-bold">
+                      Views: {viewCount ?? 0}
+                    </div>
+                  </div>
+                )}
+              </li>
+            ))
+          ) : (
+            <p className="text-gray-400">No posts available</p>
+          )}
+        </ul>
+      </section>
+
       <FooterBottom className="text-white" />
     </main>
   );

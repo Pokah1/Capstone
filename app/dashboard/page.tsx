@@ -1,46 +1,104 @@
-import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
-import Link from "next/link";
-import AuthButton from "@/components/AuthButton";
-import FooterBottom from "@/components/firstPage/footerBottom";
-import dynamic from "next/dynamic";
+'use client';
 
-// Dynamically import BarChart as a client-side component
-const BarChart = dynamic(() => import("@/components/charts/barChart"), {
-  ssr: false,
-});
+import { useState, useEffect } from 'react';
+import { createClient } from '@/utils/supabase/client';
+import Link from 'next/link';
+import Modal from '@/components/ModalDisplay';
+import FooterBottom from '@/components/firstPage/footerBottom';
+import SearchComponent from '@/components/Search';
+import BarChart from '@/components/charts/barChart';
 
-const barData = {
-  labels: ["January", "February", "March", "April", "May", "June"],
-  datasets: [
-    {
-      label: "Monthly Posts",
-      data: [65, 59, 80, 81, 56, 55],
-      backgroundColor: "rgba(75, 192, 192, 0.2)",
-      borderColor: "rgba(75, 192, 192, 1)",
-      borderWidth: 1,
-    },
-  ],
-};
+const Dashboard = () => {
+  const [user, setUser] = useState<any>(null);
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [barData, setBarData] = useState({
+    labels: [] as string[],
+    datasets: [
+      {
+        label: "Monthly Posts",
+        data: [] as number[],
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        borderColor: "rgba(75, 192, 192, 1)",
+        borderWidth: 1,
+      },
+    ],
+  });
 
-const Dashboard = async () => {
   const supabase = createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
 
-  if (!user) {
-    redirect("/");
-  }
+      if (!user) {
+        window.location.href = "/";
+      }
+    };
+
+    fetchUser();
+  }, [supabase]);
+
+  useEffect(() => {
+    const fetchPostCounts = async () => {
+      const { data: posts, error } = await supabase
+        .from('posts')
+        .select('created_at');
+
+      if (error) {
+        console.error('Error fetching posts:', error);
+        return;
+      }
+
+      const startMonth = 8; // August
+      const endMonth = 12; // December
+      const monthlyCounts = Array(endMonth - startMonth + 1).fill(0);
+      const labels = [];
+
+      for (let month = startMonth; month <= endMonth; month++) {
+        labels.push(new Date(0, month - 1).toLocaleString('default', { month: 'short' }));
+      }
+
+      posts.forEach((post) => {
+        const postMonth = new Date(post.created_at).getMonth() + 1; // JavaScript months are 0-based
+        if (postMonth >= startMonth && postMonth <= endMonth) {
+          monthlyCounts[postMonth - startMonth]++;
+        }
+      });
+
+      setBarData({
+        labels,
+        datasets: [
+          {
+            label: "Monthly Posts",
+            data: monthlyCounts,
+            backgroundColor: "rgba(75, 192, 192, 0.2)",
+            borderColor: "rgba(75, 192, 192, 1)",
+            borderWidth: 1,
+          },
+        ],
+      });
+    };
+
+    fetchPostCounts();
+  }, [supabase]);
+
+
+  const greetings = () => {
+    const hours = new Date().getHours();
+    return hours < 12 ? 'Good Morning!' : hours < 17 ? 'Good Afternoon!' : 'Good Evening!';
+  };
+
+  const handleOpenModal = () => setModalOpen(true);
+  const handleCloseModal = () => setModalOpen(false);
 
   return (
-    <div className="flex flex-col h-full text-white p-2.5 w-[95%] box-border mb-6">
+    <div className="flex flex-col h-full text-white p-2.5 w-[95%] box-border mb-6 mt-9">
       {/* Header */}
-      <header className="bg-primary text-primary-foreground py-4 px-6 flex flex-col md:flex-row items-center justify-between -mt-9">
-        <div className="flex items-center gap-4">
+      <header className="bg-primary text-primary-foreground py-4 px-6 flex flex-row items-center justify-between -mt-9">
+        <div className="flex items-center gap-6">
           {/* Navigation for both mobile and desktop */}
-          <nav className="flex flex-wrap items-center gap-6 mt-7">
+          <nav className="flex items-center gap-6">
             <Link href="/content">
               <button className="bg-white text-black py-2 px-4 rounded-lg border border-gray-300 hover:bg-blue-950 hover:text-white">
                 Write ✍️
@@ -54,30 +112,31 @@ const Dashboard = async () => {
             </Link>
           </nav>
         </div>
-        <div className="flex items-center gap-4 mt-4 md:mt-0">
-          <button className="bg-white text-black py-2 px-4 rounded-lg border border-gray-300 hover:bg-red-950 hover:text-white">
+        <div className="flex items-center gap-4">
+          <button className="bg-white text-black py-2 px-4 rounded-lg border border-gray-300 hover:bg-blue-950 hover:text-white font-bold cursor-none">
+            🌄 {greetings()}
+          </button>
+          <button onClick={handleOpenModal} className="bg-white text-black py-2 px-4 rounded-lg border border-gray-300 hover:bg-red-950 hover:text-white">
             Upgrade to Pro
           </button>
-          <AuthButton />
         </div>
       </header>
+      {/* Modal */}
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Upgrade to Pro">
+      <p className='text-center text-lg md:text-xl lg:text-2xl font-semibold text-gray-950'>
+  🚀 Exciting Updates Ahead! We're working tirelessly to bring you the next level of Pro Chatter features. Stay tuned for a whole new experience!
+</p>
+      </Modal>
 
       {/* Main Content */}
       <main className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
         {/* Sidebar */}
         <div className="col-span-1 md:col-span-2">
           {/* Search Section */}
-          <section className="mt-6">
-            <h2 className="text-xl font-bold">Search</h2>
-            <input
-              type="text"
-              placeholder="Search content or users..."
-              className="mt-2 w-full p-2 border border-gray-300 rounded-md text-black"
-            />
-          </section>
-          <div className="flex flex-wrap justify-center gap-5 ">
+          <SearchComponent />
+          <div className="flex flex-wrap justify-center gap-5">
             <div className="flex-1 min-w-[400px] max-w-[400px] rounded-lg p-5 shadow-md border pb-2 mt-3">
-              <h2 className="text-2xl mb-2 text-white">Monthly Posts</h2>
+              <h2 className="text-xl font-bold text-white">Monthly Posts</h2>
               <BarChart data={barData} />
               <p className="text-base text-white mt-2">
                 The Monthly Posts chart illustrates the volume of content
@@ -175,7 +234,8 @@ const Dashboard = async () => {
                   <div className="text-muted-foreground">Views</div>
                 </div>
                 <div className="bg-muted rounded-lg p-4 flex flex-col items-start gap-2">
-                  <div className="text-4xl font-bold text-black">234</div>
+                  <div className
+="text-4xl font-bold text-black">234</div>
                   <div className="text-muted-foreground">Likes</div>
                 </div>
                 <div className="bg-muted rounded-lg p-4 flex flex-col items-start gap-2">

@@ -66,7 +66,7 @@ const customTheme = {
 };
 
 interface EditorProps {
-  onChange: (blocks:PartialBlock[]) => void;
+  onChange:(updatedContent: string) => void;
   initialContent?: string;
   editable?: boolean;
 }
@@ -107,7 +107,13 @@ const Editor: React.FC<EditorProps> = ({
         editor={editor}
         editable={editable}
         theme={theme}
-        // onChange={onChange}
+       onChange={() =>{
+        if(onChange){
+          setTimeout(() =>{
+            onChange(JSON.stringify(editor.document));
+          },1000);
+        }
+       }}
       />
     </div>
   );
