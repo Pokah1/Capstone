@@ -24,6 +24,8 @@ export interface Post {
   created_at?: string;
   updated_at?: string;
   user?: SupabaseUser;
+  likes?: number; 
+  userHasLiked?: boolean;
 }
 
 export interface User {

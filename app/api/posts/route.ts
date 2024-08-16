@@ -19,16 +19,22 @@ export async function GET() {
 export async function POST(request: Request) {
   const supabase = createClient()
   try {
-    const { title, content, cover_url, user_id } = await request.json();
-    console.log('Received content:', content);
+    const { title, content, cover_url, user_id, author_name } = await request.json();
+    
 
     if (!user_id) {
       throw new Error("User ID is required");
     }
+    if (!title || title.trim() === "") {
+      throw new Error("Title is required");
+    }
+    if (!content || content.trim() === "") {
+      throw new Error("Content is required");
+    }
     
     const { data, error } = await supabase
       .from('posts')
-      .insert([{ title, content, cover_url, user_id }]);
+      .insert([{ title, content, cover_url, user_id, author_name }]);
 
     if (error) throw error;
 

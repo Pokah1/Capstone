@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Logo from '@/app/assets/logo.png';
 import LinkedInIcon from '@/app/assets/linkedin.svg';
 import TwitterIcon from '@/app/assets/twitter.svg';
-import FacebookIcon from '@/app/assets/facebook.svg';
+import GithubIcon from '@/public/assets/github.svg';
 import Testimonial from '@/components/firstPage/testimonials';
 import FooterBottom from './footerBottom';
 
@@ -18,17 +18,17 @@ interface SvgLink {
 // Define the array of social media links
 const socialMediaLinks: SvgLink[] = [
   {
-    href: "https://facebook.com",
-    Icon: FacebookIcon,
-    alt: "Facebook",
+    href: "https://github.com/Pokah1",
+    Icon: GithubIcon,
+    alt: "Github",
   },
   {
-    href: "https://twitter.com",
+    href: "https://x.com/sir_pokah?s=21",
     Icon: TwitterIcon,
     alt: "Twitter",
   },
   {
-    href: "https://linkedin.com",
+    href: "https://www.linkedin.com/in/edikan-odokwo-7497b3269",
     Icon: LinkedInIcon,
     alt: "LinkedIn",
   },
@@ -65,79 +65,79 @@ const Footer: React.FC = () => {
     const email = (form.elements.namedItem('email') as HTMLInputElement).value;
 
     alert(`Subscribed: ${email}`);
-    console.log(`Subscribed: ${email}`);
-    // Optionally, you can clear the form or give feedback to the user
     form.reset();
   };
 
   return (
-    <footer className="bg-[url('/assets/background.svg')] bg-cover bg-center min-h-screen flex flex-col text-black font-poppins p-4">
-      <div className="flex flex-col items-center">
-        <section className="my-8 mx-12 p-5">
-          <Image src={Logo} alt='company Logo' className="w-[11%] h-[11%]" priority/>
+    <footer className="bg-[url('/assets/background.svg')] bg-cover bg-center flex flex-col text-black font-poppins p-4">
+  <div className="flex flex-col items-start">
+    <section className="w-full max-w-6xl mx-auto p-5">
+      <div className="flex justify-start mb-8">
+        <Image src={Logo} alt='company Logo' className="w-28 h-auto sm:w-36" priority />
+      </div>
 
-          <div className="flex flex-wrap justify-around mt-8">
-            {/* Quick Links */}
-            <div className="min-w-[250px] my-4">
-              <h2 className="text-xl font-semibold mb-4">Quick Links</h2>
-              <ul className="list-none p-0">
-                <li className="mb-2 text-lg">
-                  <Link href="/" className="no-underline">Home</Link>
-                </li>
-                <li className="mb-2 text-lg">
-                  <Link href="/" className="no-underline">About</Link>
-                </li>
-                <li className="mb-2 text-lg">
-                  <Link href="/" className="no-underline">Features</Link>
-                </li>
-                <li className="mb-2 text-lg">
-                  <Link href="/" className="no-underline">Community</Link>
-                </li>
-                <li className="mb-2 text-lg">
-                  <Link href="/" className="no-underline">Blog</Link>
-                </li>
-                <li className="mb-2 text-lg">
-                  <Link href="/" className="no-underline">Contact Us</Link>
-                </li>
-              </ul>
-            </div>
-            {/* Social Media */}
-            <div className="min-w-[250px] my-4">
-              <h2 className="text-xl font-semibold mb-4">Follow Us</h2>
-              <p className="mb-4 text-lg">Stay connected with Chatter on social media for the latest updates and engaging content.</p>
-              <div className="flex gap-6">
-                {socialMediaLinks.map((link, index) => (
-                  <a key={index} href={link.href} target="_blank" rel="noopener noreferrer" className="w-11 h-11">
-                    <link.Icon width={30} height={30} aria-label={link.alt} />
-                  </a>
-                ))}
-              </div>
-            </div>
-            {/* Newsletter Signup */}
-            <div className="min-w-[250px] my-4">
-              <h2 className="text-xl font-semibold mb-4">Newsletter Signup</h2>
-              <p className="mb-4 text-lg">Subscribe to our newsletter for the latest updates and stories from Chatter.</p>
-              <form onSubmit={handleEmailSubmission} className="flex flex-col">
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Enter your email"
-                  className="p-2 rounded border border-gray-300 mb-2 w-[80%] h-10"
-                  required
-                />
-                <button type="submit" className="bg-[#2b6cb0] text-white p-2 rounded w-[80%] h-10 text-sm mt-3">
-                  Subscribe
-                </button>
-              </form>
+      <div className="flex flex-wrap justify-start gap-8 sm:gap-4">
+        {/* Quick Links */}
+        <div className="min-w-[250px] my-4">
+          <h2 className="text-xl font-semibold mb-4">Quick Links</h2>
+          <ul className="list-none p-0 w-min">
+            <li className="mb-2 text-lg hover:underline ">
+              <Link href="/">Home</Link>
+            </li>
+            <li className="mb-2 text-lg hover:underline">
+              <Link href="/about">About</Link>
+            </li>
+            <li className="mb-2 text-lg hover:underline">
+              <Link href="/">Community</Link>
+            </li>
+            <li className="mb-2 text-lg hover:underline">
+              <Link href="/">Blog</Link>
+            </li>
+            <li className="mb-2 text-lg hover:underline">
+              <Link href="/">Contact Us</Link>
+            </li>
+          </ul>
+        </div>
+
+        {/* Social Media and Newsletter Signup */}
+        <div className="flex flex-col sm:flex-row gap-8">
+          {/* Follow Us */}
+          <div className="min-w-[250px] my-4">
+            <h2 className="text-xl font-semibold mb-4">Follow Us</h2>
+            <p className="mb-4 text-lg">Stay connected with Chatter on social media for the latest updates and engaging content.</p>
+            <div className="flex gap-6">
+              {/* Social media icons */}
             </div>
           </div>
 
-          {/* Testimonial Component */}
-          <Testimonial testimonials={testimonials} />
-          <FooterBottom className='text-red-600'/>
-        </section>
+          {/* Newsletter Signup */}
+          <div className="min-w-[250px] my-4">
+            <h2 className="text-xl font-semibold mb-4">Newsletter Signup</h2>
+            <p className="mb-4 text-lg">Subscribe to our newsletter for the latest updates and stories from Chatter.</p>
+            <form onSubmit={handleEmailSubmission} className="flex flex-col">
+              <input
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                className="p-2 rounded border border-gray-300 mb-2 w-full sm:w-[80%] h-10"
+                required
+              />
+              <button type="submit" className="bg-[#2b6cb0] text-white p-2 rounded w-full sm:w-[80%] h-10 text-sm mt-3 hover:bg-stone-950">
+                Subscribe
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
-    </footer>
+
+      {/* Testimonial Component */}
+      <Testimonial testimonials={testimonials} />
+      <FooterBottom className='text-black' />
+    </section>
+  </div>
+</footer>
+
+  
   );
 };
 

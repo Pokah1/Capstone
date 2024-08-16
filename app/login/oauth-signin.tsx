@@ -10,7 +10,7 @@ type OAuthProvider = {
 };
 
 type OAuthButtonProps = {
-  className?: string; // Add a className prop for the container
+  className?: string; 
 };
 
 export function OAuthButton({ className }: OAuthButtonProps) {
@@ -38,14 +38,14 @@ export function OAuthButton({ className }: OAuthButtonProps) {
       {oAuthProviders.map(provider => (
         <Button
           key={provider.name}
-          className="flex-1 flex items-center justify-center gap-2" // Ensure buttons are styled correctly
+          className="flex-1 flex items-center justify-center gap-3 w-20"  
           variant="outline"
           size='mtNeg10'
           onClick={async () => {
             await oAuthSignIn(provider.name);
           }}
         >
-          {provider.icon} {/* Render the SVG icon */}
+          {provider.icon} 
           Login with {provider.displayName}
         </Button>
       ))}

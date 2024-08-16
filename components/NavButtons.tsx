@@ -21,9 +21,9 @@ const Button: React.FC<ButtonProps> = ({
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 53 58"
-            height="15" // Adjust height as needed
-            width="15"  // Adjust width as needed
-            className="ml-2" // Add margin-left for spacing
+            height="15" 
+            width="15" 
+            className="ml-2" 
           >
             <path
               strokeWidth="9"

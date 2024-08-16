@@ -27,7 +27,7 @@ export default async function Login({
       <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full">
         <Link
           href="/"
-          className="absolute top-8 left-8 text-gray-600 hover:text-gray-800 flex items-center space-x-2"
+          className="fixed top-8 left-8 text-gray-600 hover:text-gray-800 flex items-center space-x-2"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

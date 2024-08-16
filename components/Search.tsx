@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import { useRouter } from 'next/navigation'; // Ensure you are using `next/navigation`
 
 // Debounce function to delay the fetchPosts call
 const useDebounce = (value: string, delay: number) => {
@@ -21,9 +22,8 @@ const useDebounce = (value: string, delay: number) => {
 const SearchComponent: React.FC = () => {
   const [query, setQuery] = useState<string>('');
   const [results, setResults] = useState<any[]>([]);
-  const [selectedPost, setSelectedPost] = useState<any | null>(null); // State for selected post
   const debouncedQuery = useDebounce(query, 300); // Debounce search input
-
+  const router = useRouter(); // Router for navigation
   const supabase = createClient();
 
   const fetchPosts = useCallback(async (searchQuery: string) => {
@@ -35,7 +35,7 @@ const SearchComponent: React.FC = () => {
     const { data, error } = await supabase
       .from('posts')
       .select('*')
-      .ilike('title', `%${searchQuery}%`);
+      .or(`title.ilike.%${searchQuery}%,author_name.ilike.%${searchQuery}%`);
 
     if (error) {
       console.error('Error fetching posts:', error);
@@ -43,7 +43,7 @@ const SearchComponent: React.FC = () => {
     } else {
       setResults(data);
     }
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     fetchPosts(debouncedQuery);
@@ -51,11 +51,10 @@ const SearchComponent: React.FC = () => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
-    setSelectedPost(null); // Reset selected post when search query changes
   };
 
   const handlePostClick = (post: any) => {
-    setSelectedPost(post); // Set the selected post
+    router.push(`/content/${post.id}`); // Adjust the path if needed
   };
 
   return (
@@ -63,20 +62,14 @@ const SearchComponent: React.FC = () => {
       <h2 className="text-lg font-semibold mb-2">Search</h2>
       <input
         type="text"
-        placeholder="Search content or users..."
+        placeholder="Search content or authors..."
         value={query}
         onChange={handleSearchChange}
         className="w-full p-2 border border-gray-300 rounded-md text-black placeholder-gray-500"
       />
 
       <div className="mt-4">
-        {selectedPost ? (
-          // Show only the selected post
-          <div className="p-4 border border-gray-300 rounded-md">
-            <h2 className="text-xl font-bold">{selectedPost.title}</h2>
-            <p>{selectedPost.content}</p>
-          </div>
-        ) : results.length > 0 ? (
+        {results.length > 0 ? (
           <ul className="list-none">
             {results.map((post) => (
               <li
