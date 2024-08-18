@@ -29,17 +29,18 @@
     "react-simple-typewriter": "^5.0.1",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",
-    "typescript": "5.3.3",
     "uploadthing": "^6.13.2"
   },
   "devDependencies": {
     "@types/dompurify": "^3.0.5",
+    "@types/jest": "^29.5.12",
     "@types/node": "20.11.5",
     "@types/react": "18.2.48",
     "@types/react-dom": "18.2.18",
     "autoprefixer": "^10.4.19",
     "encoding": "^0.1.13",
     "postcss-cli": "^11.0.0",
-    "tailwindcss": "^3.4.6"
+    "tailwindcss": "^3.4.6",
+    "typescript": "5.3.3"
   }
 }

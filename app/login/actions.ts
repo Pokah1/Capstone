@@ -1,11 +1,11 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
+import { redirect } from 'next/navigation' 
 import { createClient } from '@/utils/supabase/server'
 
 import { Provider } from '@supabase/supabase-js'
-import { getURL } from '@/utils/helper'
+// import { getURL } from '@/utils/helper'
 import { headers } from 'next/headers'
 
 export async function signin(formData: FormData) {
@@ -33,7 +33,7 @@ export async function signup(formData: FormData) {
 
   // type-casting here for convenience
   // in practice, you should validate your inputs
-  const origin = headers
+  const origin = headers().get("origin")
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const confirmPassword = formData.get('confirmPassword') as string;
@@ -46,7 +46,7 @@ export async function signup(formData: FormData) {
     email,
     password,
     options:{
-      emailRedirectTo: `${origin}/auth/callback`,
+      emailRedirectTo: `${origin}/auth/confirm`,
     }
   })
 
@@ -68,8 +68,9 @@ export async function oAuthSignIn(provider:Provider){
   if(!provider){
     return redirect('/login?message= No provider selected')
   }
+  const origin = headers().get("origin")
   const supabase = createClient();
-  const redirectUrl = getURL("/auth/callback")
+  const redirectUrl = `${origin}/auth/confirm`
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {

@@ -163,18 +163,18 @@ const PostPage = () => {
           <div className="text-white">Loading...</div>
         </div>
       ) : (
-        <main className="p-2">
-          <section className="max-w-3xl mx-auto">
+        <main className="p-4 max-w-full mx-auto">
+          <section className="max-w-4xl mx-auto bg-gray-900 rounded-lg p-6">
             {post.cover_url && (
               <img
                 src={post.cover_url}
                 alt={post.title}
-                className="w-full h-60 object-cover rounded mb-4 mx-auto mt-3"
+                className="w-full h-auto object-cover rounded mb-4"
               />
             )}
-            <h1 className="text-white text-2xl mb-4">{post.title}</h1>
+            <h1 className="text-white text-3xl md:text-4xl font-bold mb-4">{post.title}</h1>
             <div
-              className="text-gray-300"
+              className="text-gray-300 mb-4"
               dangerouslySetInnerHTML={{
                 __html: DOMPurify.sanitize(post.content),
               }}
@@ -186,41 +186,43 @@ const PostPage = () => {
               </span>
             </p>
             {/* Like, Bookmark, and Comment Section */}
-            <div className="flex flex-col md:flex-row items-start mt-4">
+            <div className="flex flex-col md:flex-row items-start mt-4 space-y-4 md:space-y-0 md:space-x-4">
               <button
                 onClick={() => handleLike(post.id)}
-                className={`mr-4 ${
+                className={`flex items-center space-x-2 ${
                   likedPosts.has(post.id) ? "text-red-500" : "text-gray-500"
                 }`}
               >
-                👍 Like
+                <span>👍</span>
+                <span>Like</span>
               </button>
               <button
                 onClick={() => handleBookmark(post.id)}
-                className={`mr-4 ${
+                className={`flex items-center space-x-2 ${
                   bookmarkedPosts.has(post.id)
                     ? "text-yellow-500"
                     : "text-gray-500"
                 }`}
               >
-                📌 Bookmark
+                <span>📌</span>
+                <span>Bookmark</span>
               </button>
-              <div className="flex-1 flex flex-col md:flex-row items-start">
+              <div className="flex-1 flex flex-col md:flex-row items-start space-y-4 md:space-y-0 md:space-x-4">
                 <input
                   type="text"
                   id={`comment-${post.id}`}
                   placeholder="Add a comment..."
-                  className="mr-4 border border-gray-300 rounded px-2 py-1 mb-2 md:mb-0"
+                  className="flex-1 border border-gray-300 rounded px-3 py-2"
                 />
                 <button
                   onClick={() => handleCommentSubmit(post.id)}
-                  className="bg-blue-500 text-white rounded px-4 py-1"
+                  className="bg-blue-500 text-white rounded px-4 py-2"
                 >
                   Comment
                 </button>
               </div>
             </div>
-            <div className="mt-2">
+            <div className="mt-4 space-y-2">
               {comments[post.id]?.map((comment, index) => (
                 <p key={index} className="text-gray-400">
                   {comment}
@@ -229,7 +231,7 @@ const PostPage = () => {
             </div>
           </section>
 
-          <FooterBottom className="text-white" />
+          <FooterBottom className="text-white mt-6" />
         </main>
       )}
     </AuthWrapper>

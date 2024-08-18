@@ -31,6 +31,27 @@ const UserGrowthChart = () => {
     ],
   });
 
+  const options = {
+    scales: {
+      x: {
+        display: true,
+        beginAtZero: true,
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        display: true,
+        beginAtZero: true,
+        grid: {
+          display: true,
+        },
+      },
+    },
+    responsive: true,
+    maintainAspectRatio: false,
+  };
+
   const supabase = createClient();
 
   useEffect(() => {
@@ -49,8 +70,6 @@ const UserGrowthChart = () => {
         const month = new Date(user.created_at).getMonth(); // Get the month index (0-11)
         monthlyUserData[month]++;
       });
-     
-
 
       setLineData({
         labels: [
@@ -77,10 +96,10 @@ const UserGrowthChart = () => {
     <div className="flex flex-col items-center w-full bg-[#0f152b] border border-gray-300 rounded-lg p-5 shadow-md">
       <h2 className="text-2xl mb-2 text-white">User Growth</h2>
       <div className="w-full">
-        <LineChart data={lineData} />
+        <LineChart data={lineData} options={options} />
       </div>
       <p className="text-base text-gray-50 mt-2 text-center">
-        The User Growth chart highlights the increase in user registrations. Steady growth indicates positive user acquisition trends.
+        The User Growth chart shows the absolute number of new users per month.
       </p>
     </div>
   );

@@ -175,3 +175,19 @@
     background: #0c0000;
     border-radius: 4px;
 }
+
+
+
+
+@media (max-width: 768px) {
+    .userAccount {
+        margin-top: 5px;
+        margin-bottom: 20px; 
+    }
+}
+
+@media (max-width: 480px) {
+    .userAccount {
+        margin-top: 2px; 
+    }
+}
