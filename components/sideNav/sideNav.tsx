@@ -122,8 +122,7 @@ const SideNav: React.FC<SideNavProps> = ({ id }) => {
             <div className={styles.userDetails}>
             <span>
                 {user?.user_metadata?.full_name || user?.email || 'Guest'}
-              </span>
-              <span>{user?.role || 'User'}</span>
+              </span> 
             </div>
           </div>
         </div>

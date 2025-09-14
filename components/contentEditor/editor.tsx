@@ -1,120 +1,91 @@
-import React, { useState, useEffect } from 'react';
-import { BlockNoteEditor, PartialBlock } from '@blocknote/core';
-import { BlockNoteView, darkDefaultTheme, lightDefaultTheme, Theme ,} from '@blocknote/mantine';
-import { useCreateBlockNote } from '@blocknote/react';
+"use client";
 
-import "@blocknote/core/fonts/inter.css";
-import "@blocknote/mantine/style.css";
-import { uploadFiles } from '@/utils/uploadthing';
-import styles from '@/components/contentEditor/editor.module.css';
+import React, { useEffect } from "react";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Color from "@tiptap/extension-color";
+import Highlight from "@tiptap/extension-highlight";
+import Underline from "@tiptap/extension-underline";
+import Strike from "@tiptap/extension-strike";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import BulletList from "@tiptap/extension-bullet-list";
+import OrderedList from "@tiptap/extension-ordered-list";
+import ListItem from "@tiptap/extension-list-item";
 
-const lightCustomTheme = {
-  colors: {
-    editor: {
-      text: "#222222",
-      background: "#ffeeee",
-    },
-    menu: {
-      text: "#ffffff",
-      background: "#010414",
-    },
-    tooltip: {
-      text: "#ffffff",
-      background: "#000",
-    },
-    hovered: {
-      text: "#ffffff",
-      background: "#00509E",
-    },
-    selected: {
-      text: "#ffffff",
-      background: "#00509E",
-    },
-    disabled: {
-      text: "#A1A1A1",
-      background: "#7D7D7D",
-    },
-    shadow: "#333333",
-    border: "#00509E",
-    sideMenu: "#bababa",
-    highlights: lightDefaultTheme.colors!.highlights,
-  },
-  borderRadius: 4,
-  fontFamily: "Helvetica Neue, sans-serif",
-} satisfies Theme;
 
-// The theme for dark mode, uses the light theme defined above with a few changes
-const darkCustomTheme = {
-  ...lightCustomTheme,
-  colors: {
-    ...lightCustomTheme.colors,
-    editor: {
-      text: "#ffffff",
-      background: "#010414",
-    },
-    sideMenu: "#ffffff",
-    highlights: darkDefaultTheme.colors!.highlights,
-  },
-} satisfies Theme;
-
-// The combined "custom theme",
-// we pass this to BlockNoteView and then the editor will automatically
-// switch between lightCustomTheme / darkCustomTheme based on the system theme
-const customTheme = {
-  light: lightCustomTheme,
-  dark: darkCustomTheme,
-};
+import styles from "./editor.module.css";
 
 interface EditorProps {
-  onChange:(updatedContent: string) => void;
+  onChange: (updatedContent: string) => void;
   initialContent?: string;
   editable?: boolean;
 }
 
-const Editor: React.FC<EditorProps> = ({
-  onChange,
-  initialContent,
-  editable = true, // Default to true if not provided
-}) => {
-  const [theme, setTheme] = useState<Theme>(window.matchMedia('(prefers-color-scheme: dark)').matches ? customTheme.dark : customTheme.light);
+const MenuBar = ({ editor }: { editor: any }) => {
+  if (!editor) return null;
 
-  const editor: BlockNoteEditor = useCreateBlockNote({
-    initialContent: initialContent
-      ? (JSON.parse(initialContent) as PartialBlock[])
-      : undefined,
-    uploadFile: async (file: File) => {
-      const [res] = await uploadFiles('imageUploader', { files: [file] });
-      return res.url;
-    }
+  const colors = ["#f94144", "#f3722c", "#f9c74f", "#90be6d", "#577590", "#ffffff"];
+
+  return (
+    <div className={styles.menuBar}>
+      <button onClick={() => editor.chain().focus().toggleBold().run()} className={editor.isActive("bold") ? styles.activeButton : styles.button}>B</button>
+      <button onClick={() => editor.chain().focus().toggleItalic().run()} className={editor.isActive("italic") ? styles.activeButton : styles.button}>I</button>
+      <button onClick={() => editor.chain().focus().toggleUnderline().run()} className={editor.isActive("underline") ? styles.activeButton : styles.button}>U</button>
+      <button onClick={() => editor.chain().focus().toggleStrike().run()} className={editor.isActive("strike") ? styles.activeButton : styles.button}>S</button>
+
+      <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={editor.isActive("heading", { level: 1 }) ? styles.activeButton : styles.button}>H1</button>
+      <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={editor.isActive("heading", { level: 2 }) ? styles.activeButton : styles.button}>H2</button>
+      <button onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={editor.isActive("heading", { level: 3 }) ? styles.activeButton : styles.button}>H3</button>
+
+      <button onClick={() => editor.chain().focus().toggleBulletList().run()} className={editor.isActive("bulletList") ? styles.activeButton : styles.button}>• List</button>
+      <button onClick={() => editor.chain().focus().toggleOrderedList().run()} className={editor.isActive("orderedList") ? styles.activeButton : styles.button}>1. List</button>
+
+      <button onClick={() => editor.chain().focus().toggleCodeBlock().run()} className={editor.isActive("codeBlock") ? styles.activeButton : styles.button}>Code</button>
+      <button onClick={() => editor.chain().focus().toggleHighlight({ color: "#ffd700" }).run()} className={editor.isActive("highlight") ? styles.activeButton : styles.button}>Highlight</button>
+
+      {colors.map(color => (
+        <button
+          key={color}
+          style={{ backgroundColor: color }}
+          onClick={() => editor.chain().focus().setColor(color).run()}
+          className={editor.isActive("color", { color }) ? styles.activeButton : styles.button}
+        />
+      ))}
+    </div>
+  );
+};
+
+const Editor: React.FC<EditorProps> = ({ onChange, initialContent = "", editable = true }) => {
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Color,
+      Highlight,
+      Underline,
+      Strike,
+      BulletList,
+      OrderedList,
+      ListItem,
+    ],
+    content: initialContent || "",
+    editable,
+    immediatelyRender: false,
+    onUpdate: ({ editor }) => onChange(editor.getHTML()),
+    editorProps: { attributes: { class: styles.editorContent } },
   });
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      setTheme(e.matches ? customTheme.dark : customTheme.light);
-    };
+    if (editor && initialContent && editor.getHTML() !== initialContent) {
+      editor.commands.setContent(initialContent);
+    }
+  }, [initialContent, editor]);
 
-    mediaQuery.addEventListener('change', handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange);
-    };
-  }, []);
+  if (!editor) return null;
 
   return (
-    <div className={`${styles.editorContainer} ${styles.customBlockNoteTheme}`}>
-      <BlockNoteView
-        editor={editor}
-        editable={editable}
-        theme={theme}
-       onChange={() =>{
-        if(onChange){
-          setTimeout(() =>{
-            onChange(JSON.stringify(editor.document));
-          },1000);
-        }
-       }}
-      />
+    <div className={styles.editorContainer} onClick={() => editor.chain().focus().run()}>
+      <MenuBar editor={editor} />
+      <EditorContent editor={editor} />
     </div>
   );
 };

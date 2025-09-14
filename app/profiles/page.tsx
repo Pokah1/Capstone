@@ -1,8 +1,22 @@
 "use client";
+
+
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Post, User } from "@/types";
 import AuthWrapper from "@/components/AuthWrapper";
+import DOMPurify from "dompurify";
+import styles from "./Profiles.module.css"
+
+
+
+// Helper: strip tags for previews
+function getPreviewText(html: string, maxLength = 120): string {
+  if (!html) return "";
+  const text = html.replace(/<[^>]+>/g, ""); // strip HTML
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength).trim() + "...";
+}
 
 const supabase = createClient();
 
@@ -34,7 +48,7 @@ export default function UserPosts() {
         .from("posts")
         .select("*")
         .eq("user_id", userId)
-        .order("created_at", { ascending: false }); // Fetching posts with the latest first
+        .order("created_at", { ascending: false });
 
       if (error) {
         console.error("Error fetching posts:", error);
@@ -66,7 +80,6 @@ export default function UserPosts() {
 
       setPosts(posts.filter((post) => post.id !== postId));
       setSelectedPost(null);
-
     }
   };
 
@@ -89,119 +102,55 @@ export default function UserPosts() {
 
   return (
     <AuthWrapper>
-      <main className="p-6 bg-gray-900 min-h-screen text-white">
-        <header className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-100">Your Posts</h1>
-        </header>
+      <main className={styles.container}>
+  <header className={styles.header}>
+    <h1>Your Posts</h1>
+  </header>
 
-        {selectedPost ? (
-          <article className="max-w-4xl mx-auto bg-gray-800 shadow-md rounded-lg p-6">
-            {selectedPost.cover_url && (
-              <img
-                src={selectedPost.cover_url}
-                alt={selectedPost.title}
-                className="w-full h-64 object-cover rounded-md mb-4"
-              />
-            )}
-            <h2 className="text-2xl font-bold mb-2 text-gray-100">
-              {selectedPost.title}
-            </h2>
-            <p className="text-gray-300 mb-4">{selectedPost.content}</p>
-            <div className="flex justify-between">
-              <button
-                className="px-6 py-2 bg-white text-black rounded hover:bg-blue-600 transition"
-                onClick={() => setSelectedPost(null)}
-              >
-                Back to Posts
-              </button>
-              <button
-                className="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-                onClick={() => selectedPost?.id && deletePost(selectedPost.id)}
-              >
-                Delete Post
-              </button>
-            </div>
-          </article>
-        ) : (
-          <>
-            {user ? (
-              <>
-                <section className="mb-4 text-gray-300 text-center">
-                  <h2 className="text-xl font-semibold">
-                    Welcome,{" "}
-                    <span className="text-yellow-200">
-                      {user.user_metadata?.full_name || user.email || "Guest"}
-                    </span>
-                  </h2>
-                </section>
+  {selectedPost ? (
+    <article className={styles.selectedPost}>
+      {selectedPost.cover_url && <img src={selectedPost.cover_url} alt={selectedPost.title} />}
+      <h2>{selectedPost.title}</h2>
+      <div className={styles.selectedPostContent} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedPost.content) }} />
+      <div className={styles.actions}>
+        <button className={styles.backButton} onClick={() => setSelectedPost(null)}>Back to Posts</button>
+        <button className={styles.deleteButton} onClick={() => selectedPost?.id && deletePost(selectedPost.id)}>Delete Post</button>
+      </div>
+    </article>
+  ) : (
+    <>
+      {user && (
+        <section className={styles.welcome}>
+          Welcome, <span>{user.user_metadata?.full_name || user.email || "Guest"}</span>
+        </section>
+      )}
 
-                {currentPosts.length > 0 ? (
-                  <section>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      {currentPosts.map((post) => (
-                        <article
-                          key={post.id}
-                          className="bg-gray-800 shadow-md rounded-lg overflow-hidden cursor-pointer transition-transform transform hover:scale-105 hover:shadow-lg"
-                          onClick={() => viewPost(post)}
-                        >
-                          {post.cover_url && (
-                            <img
-                              src={post.cover_url}
-                              alt={post.title}
-                              className="w-full h-48 object-cover"
-                            />
-                          )}
-                          <div className="p-4">
-                            <h3 className="text-lg font-semibold text-gray-100">
-                              {post.title}
-                            </h3>
-                            <p className="text-gray-400 mt-2 text-sm line-clamp-2">
-                              {post.content}
-                            </p>
-                          </div>
-                        </article>
-                      ))}
-                    </div>
+      {currentPosts.length > 0 ? (
+        <section className={styles.postsGrid}>
+          {currentPosts.map((post) => (
+            <article key={post.id} className={styles.postCard} onClick={() => viewPost(post)}>
+              {post.cover_url && <img src={post.cover_url} alt={post.title} />}
+              <div className={styles.postCardContent}>
+                <h3>{post.title}</h3>
+                <p>{getPreviewText(post.content, 120)}</p>
 
-                    <nav className="mt-6 flex justify-between">
-                      <button
-                        className={`px-4 py-2 bg-white text-black rounded ${
-                          currentPage === 1
-                            ? "opacity-50 cursor-not-allowed"
-                            : "hover:bg-blue-600"
-                        }`}
-                        onClick={prevPage}
-                        disabled={currentPage === 1}
-                      >
-                        Previous
-                      </button>
-                      <button
-                        className={`px-4 py-2 bg-white text-black rounded ${
-                          indexOfLastPost >= posts.length
-                            ? "opacity-50 cursor-not-allowed"
-                            : "hover:bg-blue-600"
-                        }`}
-                        onClick={nextPage}
-                        disabled={indexOfLastPost >= posts.length}
-                      >
-                        Next
-                      </button>
-                    </nav>
-                  </section>
-                ) : (
-                  <p className="text-gray-400 text-center">
-                    You haven't created any posts yet.
-                  </p>
-                )}
-              </>
-            ) : (
-              <p className="text-gray-400 text-center">
-                Loading user information...
-              </p>
-            )}
-          </>
-        )}
-      </main>
+              </div>
+            </article>
+          ))}
+        </section>
+      ) : (
+        <p className={styles.infoMessage}>You haven't created any posts yet.</p>
+      )}
+
+      {/* Pagination */}
+      <div className={styles.pagination}>
+        <button onClick={prevPage} disabled={currentPage === 1}>Previous</button>
+        <button onClick={nextPage} disabled={indexOfLastPost >= posts.length}>Next</button>
+      </div>
+    </>
+  )}
+</main>
+
     </AuthWrapper>
   );
 }

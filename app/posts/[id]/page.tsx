@@ -6,7 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import AuthWrapper from "@/components/AuthWrapper";
 import FooterBottom from "@/components/firstPage/footerBottom";
 import DOMPurify from "dompurify";
-import Link from "next/link";
+import postStyle from "./PostPage.module.css"
 
 const PostPage = () => {
   const { id } = useParams(); // Get the post ID from the URL parameters
@@ -159,80 +159,55 @@ const PostPage = () => {
   return (
     <AuthWrapper>
       {loading ? (
-        <div className="flex items-center justify-center h-screen">
-          <div className="text-white">Loading...</div>
-        </div>
+        <div className={postStyle.loadingContainer}>
+    <div className={postStyle.loadingText}>Loading...</div>
+  </div>
       ) : (
-        <main className="p-4 max-w-full mx-auto">
-          <section className="max-w-4xl mx-auto bg-gray-900 rounded-lg p-6">
-            {post.cover_url && (
-              <img
-                src={post.cover_url}
-                alt={post.title}
-                className="w-full h-auto object-cover rounded mb-4"
-              />
-            )}
-            <h1 className="text-white text-3xl md:text-4xl font-bold mb-4">{post.title}</h1>
-            <div
-              className="text-gray-300 mb-4"
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(post.content),
-              }}
-            />
-            <p className="text-gray-400 font-bold font-playfair mt-3">
-              Author:{" "}
-              <span className="text-yellow-400 italic">
-                {post.author_name || "Anonymous"}
-              </span>
-            </p>
-            {/* Like, Bookmark, and Comment Section */}
-            <div className="flex flex-col md:flex-row items-start mt-4 space-y-4 md:space-y-0 md:space-x-4">
-              <button
-                onClick={() => handleLike(post.id)}
-                className={`flex items-center space-x-2 ${
-                  likedPosts.has(post.id) ? "text-red-500" : "text-gray-500"
-                }`}
-              >
-                <span>👍</span>
-                <span>Like</span>
-              </button>
-              <button
-                onClick={() => handleBookmark(post.id)}
-                className={`flex items-center space-x-2 ${
-                  bookmarkedPosts.has(post.id)
-                    ? "text-yellow-500"
-                    : "text-gray-500"
-                }`}
-              >
-                <span>📌</span>
-                <span>Bookmark</span>
-              </button>
-              <div className="flex-1 flex flex-col md:flex-row items-start space-y-4 md:space-y-0 md:space-x-4">
-                <input
-                  type="text"
-                  id={`comment-${post.id}`}
-                  placeholder="Add a comment..."
-                  className="flex-1 border border-gray-300 rounded px-3 py-2"
-                />
-                <button
-                  onClick={() => handleCommentSubmit(post.id)}
-                  className="bg-blue-500 text-white rounded px-4 py-2"
-                >
-                  Comment
-                </button>
-              </div>
-            </div>
-            <div className="mt-4 space-y-2">
-              {comments[post.id]?.map((comment, index) => (
-                <p key={index} className="text-gray-400">
-                  {comment}
-                </p>
-              ))}
-            </div>
-          </section>
+        <main className={postStyle.postContainer}>
+  <section className={postStyle.postContent}>
+    {post.cover_url && (
+      <img src={post.cover_url} alt={post.title} className={postStyle.postCover} />
+    )}
+    <h1 className={postStyle.postTitle}>{post.title}</h1>
+    <p className={postStyle.postAuthor}>
+      Author: <span>{post.author_name || "Anonymous"}</span>
+    </p>
+    <div
+      className={postStyle.postBody}
+      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }}
+    />
 
-          <FooterBottom className="text-white mt-6" />
-        </main>
+    <div className={postStyle.interactionBar}>
+      <button
+        onClick={() => handleLike(post.id)}
+        className={likedPosts.has(post.id) ? postStyle.liked : ""}
+      >
+        👍 Like
+      </button>
+      <button
+        onClick={() => handleBookmark(post.id)}
+        className={bookmarkedPosts.has(post.id) ? postStyle.bookmarked : ""}
+      >
+        📌 Bookmark
+      </button>
+    </div>
+
+    <div className={postStyle.commentSection}>
+      <input id={`comment-${post.id}`} placeholder="Add a comment..." />
+      <button onClick={() => handleCommentSubmit(post.id)}>Comment</button>
+    </div>
+
+    <div className={postStyle.commentsList}>
+      {comments[post.id]?.map((comment, idx) => (
+        <p key={idx}>{comment}</p>
+      ))}
+    </div>
+  </section>
+
+  <FooterBottom className="text-white mt-6" />
+</main>
+
+
       )}
     </AuthWrapper>
   );
