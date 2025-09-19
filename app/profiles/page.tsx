@@ -1,16 +1,11 @@
 "use client";
 
-
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Post, User } from "@/types";
 import AuthWrapper from "@/components/AuthWrapper";
 import DOMPurify from "dompurify";
-import styles from "./Profiles.module.css"
 
-
-
-// Helper: strip tags for previews
 function getPreviewText(html: string, maxLength = 120): string {
   if (!html) return "";
   const text = html.replace(/<[^>]+>/g, ""); // strip HTML
@@ -34,26 +29,17 @@ export default function UserPosts() {
         error,
       } = await supabase.auth.getUser();
 
-      if (error || !user) {
-        console.error("Error fetching current user:", error);
-        return;
-      }
-
+      if (error || !user) return;
       setUser(user);
       fetchPostsByUser(user.id);
     }
 
     async function fetchPostsByUser(userId: string) {
-      const { data: posts, error } = await supabase
+      const { data: posts } = await supabase
         .from("posts")
         .select("*")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Error fetching posts:", error);
-        return;
-      }
 
       setPosts(posts || []);
     }
@@ -61,96 +47,130 @@ export default function UserPosts() {
     fetchUser();
   }, []);
 
-  const viewPost = (post: Post) => {
-    setSelectedPost(post);
-  };
+  const viewPost = (post: Post) => setSelectedPost(post);
 
   const deletePost = async (postId: string) => {
-    const confirmed = confirm(
-      "Are you sure you want to delete this post? This action cannot be undone."
-    );
-
-    if (confirmed) {
-      const { error } = await supabase.from("posts").delete().eq("id", postId);
-
-      if (error) {
-        console.error("Error deleting post:", error);
-        return;
-      }
-
-      setPosts(posts.filter((post) => post.id !== postId));
-      setSelectedPost(null);
-    }
+    if (!confirm("Are you sure you want to delete this post?")) return;
+    await supabase.from("posts").delete().eq("id", postId);
+    setPosts(posts.filter((post) => post.id !== postId));
+    setSelectedPost(null);
   };
 
-  // Pagination logic
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
 
-  const nextPage = () => {
-    if (indexOfLastPost < posts.length) {
-      setCurrentPage((prevPage) => prevPage + 1);
-    }
-  };
-
-  const prevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prevPage) => prevPage - 1);
-    }
-  };
-
   return (
     <AuthWrapper>
-      <main className={styles.container}>
-  <header className={styles.header}>
-    <h1>Your Posts</h1>
-  </header>
+      <main className="w-full max-w-6xl mx-auto p-6 min-h-screen bg-[#010414] text-white">
+        <header className="text-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-extrabold text-yellow-400 drop-shadow-lg">
+            Your Posts
+          </h1>
+        </header>
 
-  {selectedPost ? (
-    <article className={styles.selectedPost}>
-      {selectedPost.cover_url && <img src={selectedPost.cover_url} alt={selectedPost.title} />}
-      <h2>{selectedPost.title}</h2>
-      <div className={styles.selectedPostContent} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedPost.content) }} />
-      <div className={styles.actions}>
-        <button className={styles.backButton} onClick={() => setSelectedPost(null)}>Back to Posts</button>
-        <button className={styles.deleteButton} onClick={() => selectedPost?.id && deletePost(selectedPost.id)}>Delete Post</button>
-      </div>
-    </article>
-  ) : (
-    <>
-      {user && (
-        <section className={styles.welcome}>
-          Welcome, <span>{user.user_metadata?.full_name || user.email || "Guest"}</span>
-        </section>
-      )}
+        {selectedPost ? (
+          <article className="max-w-3xl mx-auto bg-gradient-to-br from-[#0a0f2a] to-[#010414] rounded-2xl p-6 shadow-2xl space-y-6">
+            {selectedPost.cover_url && (
+              <img
+                src={selectedPost.cover_url}
+                alt={selectedPost.title}
+                className="w-full max-h-[450px] object-cover rounded-lg shadow-lg"
+              />
+            )}
+            <h2 className="text-2xl font-bold text-yellow-400 text-center">
+              {selectedPost.title}
+            </h2>
+            <div
+              className="prose prose-invert max-w-none"
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(selectedPost.content),
+              }}
+            />
+            <div className="flex justify-between gap-4">
+              <button
+                onClick={() => setSelectedPost(null)}
+                className="bg-blue-900 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold"
+              >
+                Back to Posts
+              </button>
+              <button
+                onClick={() => selectedPost?.id && deletePost(selectedPost.id)}
+                className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold"
+              >
+                Delete Post
+              </button>
+            </div>
+          </article>
+        ) : (
+          <>
+            {user && (
+              <p className="text-center text-lg mb-6">
+                Welcome,{" "}
+                <span className="font-bold text-yellow-400">
+                  {user.user_metadata?.full_name || user.email || "Guest"}
+                </span>
+              </p>
+            )}
 
-      {currentPosts.length > 0 ? (
-        <section className={styles.postsGrid}>
-          {currentPosts.map((post) => (
-            <article key={post.id} className={styles.postCard} onClick={() => viewPost(post)}>
-              {post.cover_url && <img src={post.cover_url} alt={post.title} />}
-              <div className={styles.postCardContent}>
-                <h3>{post.title}</h3>
-                <p>{getPreviewText(post.content, 120)}</p>
+            {currentPosts.length > 0 ? (
+              <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {currentPosts.map((post) => (
+                  <article
+                    key={post.id}
+                    onClick={() => viewPost(post)}
+                    className="bg-gradient-to-br from-[#0a0f2a] to-[#010414] rounded-2xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1 cursor-pointer overflow-hidden"
+                  >
+                    {post.cover_url && (
+                      <img
+                        src={post.cover_url}
+                        alt={post.title}
+                        className="w-full h-44 object-cover"
+                      />
+                    )}
+                    <div className="p-4">
+                      <h3 className="text-xl font-bold text-yellow-400 mb-2">
+                        {post.title}
+                      </h3>
+                      <p className="text-gray-300 text-sm">
+                        {getPreviewText(post.content, 120)}
+                      </p>
+                    </div>
+                  </article>
+                ))}
+              </section>
+            ) : (
+              <p className="text-center text-gray-400 mt-6">
+                You haven’t created any posts yet.
+              </p>
+            )}
 
-              </div>
-            </article>
-          ))}
-        </section>
-      ) : (
-        <p className={styles.infoMessage}>You haven't created any posts yet.</p>
-      )}
-
-      {/* Pagination */}
-      <div className={styles.pagination}>
-        <button onClick={prevPage} disabled={currentPage === 1}>Previous</button>
-        <button onClick={nextPage} disabled={indexOfLastPost >= posts.length}>Next</button>
-      </div>
-    </>
-  )}
-</main>
-
+            {/* Pagination */}
+            <div className="flex justify-between items-center mt-8">
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.max(1, prev - 1))
+                }
+                disabled={currentPage === 1}
+                className="px-4 py-2 rounded-lg bg-blue-900 hover:bg-blue-700 disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) =>
+                    indexOfLastPost < posts.length ? prev + 1 : prev
+                  )
+                }
+                disabled={indexOfLastPost >= posts.length}
+                className="px-4 py-2 rounded-lg bg-blue-900 hover:bg-blue-700 disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </>
+        )}
+      </main>
     </AuthWrapper>
   );
 }

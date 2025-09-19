@@ -4,35 +4,39 @@ const supabase = createClient();
 
 export const fetchAnalyticsData = async () => {
   try {
-    // Fetch total posts
+    // Count total posts, likes, comments using exact count
+    const { count: totalPostsCount } = await supabase
+      .from("posts")
+      .select("id", { count: "exact", head: true });
+    const totalPosts = totalPostsCount || 0;
+
+    const { count: totalLikesCount } = await supabase
+      .from("post_likes")
+      .select("id", { count: "exact", head: true });
+    const totalLikes = totalLikesCount || 0;
+
+    const { count: totalCommentsCount } = await supabase
+      .from("post_comments")
+      .select("id", { count: "exact", head: true });
+    const totalComments = totalCommentsCount || 0;
+
+    // Count total users
+    const { count: totalUsersCount } = await supabase
+      .from("users")
+      .select("id", { count: "exact", head: true });
+    const totalUsers = totalUsersCount || 0;
+
+    // Count unique users who have posted
     const { data: postsData } = await supabase
       .from("posts")
-      .select("*");
+      .select("user_id");
+    const usersWithPosts = postsData
+      ? new Set(postsData.map((p) => p.user_id)).size
+      : 0;
 
-    // Handle the case where postsData might be null
-    const totalPosts = postsData ? postsData.length : 0;
-
-    // Fetch total likes and comments
-    const { data: likesData } = await supabase
-      .from("post_likes")
-      .select("post_id");
-    const { data: commentsData } = await supabase
-      .from("post_comments")
-      .select("post_id");
-
-    // Handle the case where likesData or commentsData might be null
-    const totalLikes = likesData ? likesData.length : 0;
-    const totalComments = commentsData ? commentsData.length : 0;
-
-    // Fetch total users
-    const { count: totalUsers } = await supabase
-      .from("users")
-      .select("*", { count: "exact" });
-    const totalConversions = totalUsers || 0;
-
-    // Calculate and round the conversion rate
-    const conversionRate = totalConversions 
-      ? parseFloat((totalPosts / totalConversions * 100).toFixed(1)) 
+    // Conversion rate = % of users who posted at least once
+    const conversionRate = totalUsers
+      ? parseFloat(((usersWithPosts / totalUsers) * 100).toFixed(1))
       : 0;
 
     return {

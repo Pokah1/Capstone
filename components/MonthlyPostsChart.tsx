@@ -17,14 +17,11 @@ interface ChartData {
 
 const MonthlyPostsChart = () => {
   const [barData, setBarData] = useState<ChartData>({
-    labels: [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-    ],
+    labels: [],
     datasets: [
       {
         label: 'Monthly Posts',
-        data: Array(12).fill(0), // Initialize with 12 zeros for each month
+        data: [],
         backgroundColor: 'rgba(75, 192, 192, 0.2)',
         borderColor: 'rgba(75, 192, 192, 1)',
         borderWidth: 1,
@@ -45,22 +42,39 @@ const MonthlyPostsChart = () => {
         return;
       }
 
-      const monthlyCounts = Array(12).fill(0);
+      // Generate last 12 months labels (e.g., Sep 2023 -> Aug 2024)
+      const labels: string[] = [];
+      const monthlyCounts: Record<string, number> = {};
 
+      const now = new Date();
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const label = d.toLocaleString('default', { month: 'short', year: 'numeric' });
+        labels.push(label);
+        monthlyCounts[label] = 0;
+      }
+
+      // Count posts in those months
       posts.forEach((post) => {
-        const postMonth = new Date(post.created_at).getMonth(); // 0 (Jan) to 11 (Dec)
-        monthlyCounts[postMonth]++;
+        const d = new Date(post.created_at);
+        const label = d.toLocaleString('default', { month: 'short', year: 'numeric' });
+        if (monthlyCounts[label] !== undefined) {
+          monthlyCounts[label]++;
+        }
       });
 
-      setBarData((prevState) => ({
-        ...prevState,
+      setBarData({
+        labels,
         datasets: [
           {
-            ...prevState.datasets[0],
-            data: monthlyCounts,
+            label: 'Monthly Posts',
+            data: labels.map((label) => monthlyCounts[label]),
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1,
           },
         ],
-      }));
+      });
     };
 
     fetchPostCounts();

@@ -23,8 +23,9 @@ const AuthWrapper = ({ children }: AuthWrapperProps) => {
   if (!isMounted) return null; // Prevent rendering until the component is mounted
 
   if (loading) {
-    return <div className={styles.ldsRipple}><div></div><div></div></div>;
-  }
+  return <div className={styles.authWrapperLoader}><div></div><div></div></div>;
+}
+
 
   return <>{children}</>;
 };

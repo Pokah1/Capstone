@@ -5,36 +5,66 @@ import dynamic from "next/dynamic";
 import editorStyles from "@/app/content/content.module.css";
 import FooterBottom from "@/components/firstPage/footerBottom";
 import Cover from "@/components/contentEditor/cover";
-import { fetchUser } from "@/utils/fetchUser";
+// import { fetchUser } from "@/utils/fetchUser";
+import { UserProfile } from "@/types/ser";
 import { fetchPosts, savePost } from "@/utils/userService";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 import DOMPurify from "dompurify";
 import AuthWrapper from "@/components/AuthWrapper";
 import Link from "next/link";
 
+
+
+  const supabase = createClient();
+
 // Helper: remove HTML tags for preview
 const stripHtml = (html: string) => html.replace(/<[^>]+>/g, "");
+
 
 const EditorPage = () => {
   const [coverUrl, setCoverUrl] = useState<string>("");
   const [title, setTitle] = useState<string>("");
   const [editorContent, setEditorContent] = useState<string>("");
   const [user, setUser] = useState<any | null>(null);
+  const [authorName, setAuthorName] = useState<string>("Anonymous");
   const [posts, setPosts] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [authorName, setAuthorName] = useState<string>("");
+
+
 
   const postsPerPage = currentPage === 1 ? 6 : 9;
   const router = useRouter();
 
-  // Load user
-  useEffect(() => {
-    const loadUser = async () => {
-      const user = await fetchUser(router);
-      if (user) setUser(user);
-    };
-    loadUser();
-  }, [router]);
+  // Load user and resolve author name
+ useEffect(() => {
+  const loadUser = async () => {
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.getUser();
+
+    if (!authUser) return;
+
+    setUser(authUser);
+
+    const { data: profile } = await supabase
+      .from("users")
+      .select("id, full_name, avatar_url")
+      .eq("id", authUser.id)
+      .single<UserProfile>();
+
+    // ✅ Always prefer users.full_name
+    const name =
+      profile?.full_name ||
+      (authUser.user_metadata?.full_name as string) ||
+      authUser.email ||
+      "Anonymous";
+
+    setAuthorName(name);
+  };
+
+  loadUser();
+}, []);
 
   // Load posts
   useEffect(() => {
@@ -116,18 +146,14 @@ const EditorPage = () => {
           <Editor onChange={handleEditorChange} initialContent={editorContent} editable />
         </section>
 
-        {/* Author Name */}
+        {/* Author name (auto, no input) */}
         <section className={editorStyles.authorSection}>
-          <input
-            type="text"
-            placeholder="Author Name..."
-            className={editorStyles.authorInput}
-            value={authorName}
-            onChange={(e) => setAuthorName(e.target.value)}
-          />
+          <p className="text-gray-400 text-sm">
+            ✍️ Author: <span className="font-semibold text-white">{authorName}</span>
+          </p>
         </section>
 
-        {/* Posts List (Preview: plain text) */}
+        {/* Posts List */}
         <section>
           <h2 className={editorStyles.postsHeading}>Posts</h2>
           <ul className={editorStyles.postsList}>
