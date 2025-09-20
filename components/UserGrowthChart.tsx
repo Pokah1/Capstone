@@ -19,33 +19,19 @@ interface ChartData {
 const UserGrowthChart = () => {
   const [lineData, setLineData] = useState<ChartData>({
     labels: [],
-    datasets: [
-      {
-        label: 'User Growth',
-        data: [],
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 4,
-        fill: false,
-        tension: 0.1,
-      },
-    ],
+    datasets: [],
   });
 
   const options = {
     scales: {
       x: {
         display: true,
-        beginAtZero: true,
-        grid: {
-          display: false,
-        },
+        grid: { display: false },
       },
       y: {
         display: true,
         beginAtZero: true,
-        grid: {
-          display: true,
-        },
+        grid: { display: true },
       },
     },
     responsive: true,
@@ -65,41 +51,74 @@ const UserGrowthChart = () => {
         return;
       }
 
-      const monthlyUserData = Array(12).fill(0);
+      updateChart(users || []);
+    };
+
+    const updateChart = (users: any[]) => {
+      const groupedByYear: Record<number, number[]> = {};
+
       users.forEach(user => {
-        const month = new Date(user.created_at).getMonth(); // Get the month index (0-11)
-        monthlyUserData[month]++;
+        const createdAt = new Date(user.created_at);
+        const year = createdAt.getFullYear();
+        const month = createdAt.getMonth();
+
+        if (!groupedByYear[year]) {
+          groupedByYear[year] = Array(12).fill(0);
+        }
+        groupedByYear[year][month]++;
       });
 
+      // Assign colors per year so lines are distinct
+      const colors = [
+        'rgba(75, 192, 192, 1)',
+        'rgba(255, 99, 132, 1)',
+        'rgba(54, 162, 235, 1)',
+        'rgba(255, 206, 86, 1)',
+        'rgba(153, 102, 255, 1)',
+      ];
+
       setLineData({
-        labels: [
-          'Jan', 'Feb', 'March', 'April', 'May', 'June', 'July',
-          'Aug', 'Sept', 'Oct', 'Nov', 'Dec',
-        ],
-        datasets: [
-          {
-            label: 'Monthly User Signups',
-            data: monthlyUserData,
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 2,
-            fill: false,
-            tension: 0.1,
-          },
-        ],
+        labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+        datasets: Object.entries(groupedByYear).map(([year, months], index) => ({
+          label: `Signups ${year}`,
+          data: months,
+          borderColor: colors[index % colors.length],
+          borderWidth: 2,
+          fill: false,
+          tension: 0.1,
+        })),
       });
     };
 
+    // Initial fetch
     fetchUserSignups();
+
+    // Realtime subscription
+    const channel = supabase
+      .channel('user-growth')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'users' },
+        (payload) => {
+          console.log('New user inserted:', payload);
+          fetchUserSignups();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [supabase]);
 
   return (
     <div className="flex flex-col items-center w-full bg-[#0f152b] border border-gray-300 rounded-lg p-5 shadow-md">
-      <h2 className="text-2xl mb-2 text-white">User Growth</h2>
-      <div className="w-full">
+      <h2 className="text-2xl mb-2 text-white">User Growth (Multi-Year)</h2>
+      <div className="w-full h-[400px]">
         <LineChart data={lineData} options={options} />
       </div>
       <p className="text-base text-gray-50 mt-2 text-center">
-        The User Growth chart shows the absolute number of new users per month.
+        This chart shows the number of new users per month, separated by year.
       </p>
     </div>
   );

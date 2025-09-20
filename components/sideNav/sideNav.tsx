@@ -13,7 +13,7 @@ import profileImage from "@/app/assets/profile-pic.jpg";
 import logoutIcon from "@/app/assets/logout.svg";
 import AuthWrapper from "../AuthWrapper";
 
-import { UserProfile } from "@/types/ser";
+import { UserProfile } from "@/types/user";
 
 const SideNav: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -77,8 +77,8 @@ const SideNav: React.FC = () => {
   ];
 
   const accountItems: MenuItems[] = [
-    { title: "Profile", icon: profileIcon, onClick: () => router.push("/profiles") },
-    { title: "Settings", icon: settingsIcon, onClick: () => router.push("/settings") },
+    { title: "My-Post", icon: profileIcon, onClick: () => router.push("/my-posts") },
+    { title: "Profile", icon: settingsIcon, onClick: () => router.push("/profile") },
     { title: "Logout", icon: logoutIcon, onClick: signOut },
   ];
 
@@ -110,7 +110,7 @@ const SideNav: React.FC = () => {
           <div className="flex items-center p-4 mb-6">
             <Link href="/" className="flex items-center gap-3">
               <Image src={Logo} alt="logo" className="rounded-full w-10 h-10" />
-              <h2 className="hidden group-hover:block text-yellow-400 text-3xl font-semibold whitespace-nowrap font-playfair">
+              <h2 className="hidden group-hover:block text-white text-3xl font-semibold whitespace-nowrap font-playfair">
                 Chatter
               </h2>
             </Link>
@@ -126,7 +126,7 @@ const SideNav: React.FC = () => {
                 <a
                   href="#"
                   onClick={item.onClick}
-                  className="flex items-center gap-3 text-yellow-400 py-3 px-2 rounded-md hover:bg-white/20 transition font-poppins"
+                  className="flex items-center gap-3 text-white py-3 px-2 rounded-md hover:bg-white/20 transition font-poppins"
                 >
                   <item.icon className="w-5 h-5" />
                   <span className="hidden group-hover:inline">{item.title}</span>
@@ -142,7 +142,7 @@ const SideNav: React.FC = () => {
                 <a
                   href="#"
                   onClick={item.onClick}
-                  className="flex items-center gap-3 text-yellow-400 py-3 px-2 rounded-md hover:bg-white/20 transition"
+                  className="flex items-center gap-3 text-white py-3 px-2 rounded-md hover:bg-white/20 transition"
                 >
                   <item.icon className="w-5 h-5" />
                   <span className="hidden group-hover:inline">{item.title}</span>

@@ -1,41 +1,65 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '@/utils/supabase/server';
+// app/api/posts/[id]/route.ts
+import { NextResponse } from "next/server";
+import { createClient } from "@/utils/supabase/server";
 
-export async function PUT(request: Request) {
-  const supabase =  createClient()
+// GET /api/posts/[id] - Fetch a single post
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const supabase = createClient();
   try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    if (!id) {
-      return NextResponse.json({ error: 'Post ID is required' }, { status: 400 });
-    }
+    const { data, error } = await supabase
+      .from("posts")
+      .select("*")
+      .eq("id", params.id)
+      .single();
 
+    if (error) throw error;
+    return NextResponse.json(data);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+// PUT /api/posts/[id] - Update a post
+export async function PUT(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const supabase = createClient();
+  try {
     const { title, content, cover_url } = await request.json();
-    const { data, error } = await supabase.from('posts').update({ title, content, cover_url }).eq('id', id);
-    if (error) throw error;
 
+    const { data, error } = await supabase
+      .from("posts")
+      .update({ title, content, cover_url })
+      .eq("id", params.id)
+      .select()
+      .single();
+
+    if (error) throw error;
     return NextResponse.json(data);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-export async function DELETE(request: Request) {
-  const supabase =  createClient()
+// DELETE /api/posts/[id] - Delete a post
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const supabase = createClient();
   try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    if (!id) {
-      return NextResponse.json({ error: 'Post ID is required' }, { status: 400 });
-    }
+    const { error } = await supabase
+      .from("posts")
+      .delete()
+      .eq("id", params.id);
 
-    const { data, error } = await supabase.from('posts').delete().eq('id', id);
     if (error) throw error;
-
-    return NextResponse.json(data);
+    return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-
-

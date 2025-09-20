@@ -1,70 +1,53 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import dynamic from "next/dynamic";
-import editorStyles from "@/app/content/content.module.css";
-import FooterBottom from "@/components/firstPage/footerBottom";
-import Cover from "@/components/contentEditor/cover";
-// import { fetchUser } from "@/utils/fetchUser";
-import { UserProfile } from "@/types/ser";
-import { fetchPosts, savePost } from "@/utils/userService";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
-import DOMPurify from "dompurify";
 import AuthWrapper from "@/components/AuthWrapper";
-import Link from "next/link";
+import FooterBottom from "@/components/firstPage/footerBottom";
+import { createClient } from "@/utils/supabase/client";
+import { fetchPosts, savePost, updatePost } from "@/utils/userService";
+import { Post } from "@/types";
+import AuthorInfo from "@/components/contentInfo/AuthorInfo";
+import PostEditor from "@/components/contentInfo/PostEditor";
+import PostList from "@/components/contentInfo/PostList";
 
+const supabase = createClient();
 
-
-  const supabase = createClient();
-
-// Helper: remove HTML tags for preview
-const stripHtml = (html: string) => html.replace(/<[^>]+>/g, "");
-
-
-const EditorPage = () => {
-  const [coverUrl, setCoverUrl] = useState<string>("");
-  const [title, setTitle] = useState<string>("");
-  const [editorContent, setEditorContent] = useState<string>("");
+export default function EditorPage() {
   const [user, setUser] = useState<any | null>(null);
-  const [authorName, setAuthorName] = useState<string>("Anonymous");
+  const [authorName, setAuthorName] = useState("Anonymous");
   const [posts, setPosts] = useState<any[]>([]);
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [currentPage, setCurrentPage] = useState(1);
 
+  // for editing
+  const [editingPost, setEditingPost] = useState<any | null>(null);
 
-
-  const postsPerPage = currentPage === 1 ? 6 : 9;
   const router = useRouter();
 
-  // Load user and resolve author name
- useEffect(() => {
-  const loadUser = async () => {
-    const {
-      data: { user: authUser },
-    } = await supabase.auth.getUser();
+  // Load user
+  useEffect(() => {
+    const loadUser = async () => {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) return;
 
-    if (!authUser) return;
+      setUser(authUser);
 
-    setUser(authUser);
+      const { data: profile } = await supabase
+        .from("users")
+        .select("full_name")
+        .eq("id", authUser.id)
+        .single();
 
-    const { data: profile } = await supabase
-      .from("users")
-      .select("id, full_name, avatar_url")
-      .eq("id", authUser.id)
-      .single<UserProfile>();
+      const name =
+        profile?.full_name ||
+        (authUser.user_metadata?.full_name as string) ||
+        authUser.email ||
+        "Anonymous";
 
-    // ✅ Always prefer users.full_name
-    const name =
-      profile?.full_name ||
-      (authUser.user_metadata?.full_name as string) ||
-      authUser.email ||
-      "Anonymous";
-
-    setAuthorName(name);
-  };
-
-  loadUser();
-}, []);
+      setAuthorName(name);
+    };
+    loadUser();
+  }, []);
 
   // Load posts
   useEffect(() => {
@@ -75,121 +58,62 @@ const EditorPage = () => {
     loadPosts();
   }, []);
 
-  const handleEditorChange = (updatedContent: string) => {
-    setEditorContent(updatedContent);
-  };
+  // Save or update post
+ const handleSave = async (title: string, content: string, cover_url: string) => {
+  if (!user?.id) return;
 
-  const handleSave = async () => {
-    if (!user?.id) return;
-    await savePost(title, DOMPurify.sanitize(editorContent), coverUrl, user.id, authorName);
-    window.alert("Post saved successfully!");
-    window.location.reload();
-  };
+  let newPost: Post
 
-  const enableCover = () =>
-    setCoverUrl(
-      "https://images.unsplash.com/photo-1487017159836-4e23ece2e4cf?q=80&w=2071&auto=format&fit=crop"
+  if (editingPost) {
+    newPost = await updatePost(editingPost.id as string, title, content, cover_url);
+    setPosts((prev) =>
+    prev.map((p) => (p.id === editingPost.id ? newPost: p))
     );
-
-  const Editor = useMemo(
-    () => dynamic(() => import("@/components/contentEditor/editor"), { ssr: false }),
-    []
-  );
-
-  // Pagination
-  const indexOfLastPost = currentPage * postsPerPage;
-  const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
-
-  const handleNextPage = () => {
-    if (indexOfLastPost < posts.length) setCurrentPage(currentPage + 1);
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
-  };
+    setEditingPost(null);
+    alert("Post updated successfully");
+  } else {
+    newPost = await savePost(title, content, cover_url, user.id, authorName);
+    if (newPost) {
+      setPosts((prev) => [newPost, ...prev]);
+      alert("Post saves successfully");
+    }
+  }
+ };
 
   return (
     <AuthWrapper>
-      <main className={editorStyles.container}>
-        <header className={editorStyles.header}>
-          <button className={editorStyles.navButton} onClick={() => router.push("/dashboard")}>
+      <main className="w-full min-h-screen flex flex-col gap-6 p-6 bg-[#010414] text-white font-poppins">
+        {/* Dashboard Button */}
+        <header className="flex justify-between items-center flex-wrap gap-2">
+          <button
+            className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-black font-medium transition hover:bg-blue-900 hover:text-white"
+            onClick={() => router.push("/dashboard")}
+          >
             Dashboard
-          </button>
-          <button className={editorStyles.publishButton} onClick={handleSave}>
-            Publish
           </button>
         </header>
 
-        {/* Cover Section */}
-        <section className={editorStyles.coverSection}>
-          <Cover url={coverUrl} setUrl={setCoverUrl} />
-          {!coverUrl && (
-            <button onClick={enableCover} className={editorStyles.addCoverButton}>
-              📷 Add Cover
-            </button>
-          )}
-        </section>
-
-        {/* Title */}
-        <section className={editorStyles.titleSection}>
-          <textarea
-            placeholder="Article Title..."
-            className={editorStyles.textarea}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </section>
-
         {/* Editor */}
-        <section>
-          <Editor onChange={handleEditorChange} initialContent={editorContent} editable />
-        </section>
+        <PostEditor
+          onSave={handleSave}
+          editingPost={editingPost}
+          clearEditing={() => setEditingPost(null)}
+        />
 
-        {/* Author name (auto, no input) */}
-        <section className={editorStyles.authorSection}>
-          <p className="text-gray-400 text-sm">
-            ✍️ Author: <span className="font-semibold text-white">{authorName}</span>
-          </p>
-        </section>
+        {/* Author */}
+        <AuthorInfo authorName={authorName} />
 
         {/* Posts List */}
-        <section>
-          <h2 className={editorStyles.postsHeading}>Posts</h2>
-          <ul className={editorStyles.postsList}>
-            {currentPosts.map((post) => (
-              <li key={post.id}>
-                <Link href={`/posts/${post.id}`} className={editorStyles.postCard}>
-                  {post.cover_url && (
-                    <img src={post.cover_url} className={editorStyles.postImage} alt={post.title} />
-                  )}
-                  <h3 className={editorStyles.postTitle}>{post.title}</h3>
-                  <p className={editorStyles.postExcerpt}>
-                    {stripHtml(post.content).slice(0, 80)}...
-                  </p>
-                </Link>
-              </li>
-            ))}
-          </ul>
+        <PostList
+          posts={posts}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          currentUserId={user?.id || ""}
+          onEdit={(post) => setEditingPost(post)}
+        />
 
-          <div className={editorStyles.pagination}>
-            {currentPage > 1 && (
-              <button className={editorStyles.pageButton} onClick={handlePrevPage}>
-                Previous
-              </button>
-            )}
-            {indexOfLastPost < posts.length && (
-              <button className={editorStyles.pageButton} onClick={handleNextPage}>
-                Next
-              </button>
-            )}
-          </div>
-        </section>
-
-        <FooterBottom className={editorStyles.footer} />
+        <FooterBottom />
       </main>
     </AuthWrapper>
   );
-};
-
-export default EditorPage;
+}

@@ -35,3 +35,35 @@ export interface User {
     full_name?: string; 
   };
 }
+
+export interface Like {
+  id: string;
+  post_id: string;
+  user_id: string;
+  liked_at?: string;
+}
+
+export interface Comment {
+  id: string;
+  post_id: string;
+  user_id: string;
+  comment: string;
+  author_name: string;
+  created_at?: string;
+  commented_at?: string;
+  full_name?: string;
+}
+export interface Post {
+  id?: string;
+  user_id: string;
+  title: string;
+  content: string;
+  cover_url?: string;
+  created_at?: string;
+  updated_at?: string;
+  user?: SupabaseUser;
+  likes?: number;          // total like count
+  userHasLiked?: boolean;  // current user's like state
+  comments?: Comment[];    // optional, for easier handling in UI
+}
+

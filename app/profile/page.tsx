@@ -4,12 +4,12 @@ import { createClient } from "@/utils/supabase/client";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import AuthWrapper from "@/components/AuthWrapper";
-import { UserProfile } from "@/types/ser";
+import { UserProfile } from "@/types/user";
 
 const supabase = createClient();
 
 
-const SettingsPage = () => {
+const ProfilePage = () => {
   const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [fullName, setFullName] = useState("");
@@ -178,4 +178,4 @@ const { error } = await supabase.storage
   );
 };
 
-export default SettingsPage;
+export default ProfilePage;

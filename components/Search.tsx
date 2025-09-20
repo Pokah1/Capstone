@@ -54,12 +54,11 @@ const SearchComponent: React.FC = () => {
   };
 
   const handlePostClick = (post: any) => {
-    router.push(`/content/${post.id}`); // Adjust the path if needed
+    router.push(`/posts/${post.id}`); // Adjust the path if needed
   };
 
   return (
     <section className="mt-6">
-      <h2 className="text-lg font-semibold mb-2">Search</h2>
       <input
         type="text"
         placeholder="Search content or authors..."
