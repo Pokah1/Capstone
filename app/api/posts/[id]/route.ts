@@ -1,16 +1,18 @@
+// app/api/posts/[id]/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 
-type Context = { params: { id: string | string[] } };
-
+// Helper to normalize id
 const getPostId = (id: string | string[]) => (Array.isArray(id) ? id[0] : id);
 
-// GET /api/posts/[id]
-export async function GET(request: Request, context: Context) {
-  const { id } = context.params;
-  const postId = getPostId(id);
-
+// GET /api/posts/[id] - Fetch a single post
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string | string[] } }
+) {
+  const postId = getPostId(params.id);
   const supabase = await createClient();
+
   try {
     const { data, error } = await supabase
       .from("posts")
@@ -25,12 +27,14 @@ export async function GET(request: Request, context: Context) {
   }
 }
 
-// PUT /api/posts/[id]
-export async function PUT(request: Request, context: Context) {
-  const { id } = context.params;
-  const postId = getPostId(id);
-
+// PUT /api/posts/[id] - Update a post
+export async function PUT(
+  request: Request,
+  { params }: { params: { id: string | string[] } }
+) {
+  const postId = getPostId(params.id);
   const supabase = await createClient();
+
   try {
     const { title, content, cover_url } = await request.json();
 
@@ -48,14 +52,20 @@ export async function PUT(request: Request, context: Context) {
   }
 }
 
-// DELETE /api/posts/[id]
-export async function DELETE(request: Request, context: Context) {
-  const { id } = context.params;
-  const postId = getPostId(id);
-
+// DELETE /api/posts/[id] - Delete a post
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string | string[] } }
+) {
+  const postId = getPostId(params.id);
   const supabase = await createClient();
+
   try {
-    const { error } = await supabase.from("posts").delete().eq("id", postId);
+    const { error } = await supabase
+      .from("posts")
+      .delete()
+      .eq("id", postId);
+
     if (error) throw error;
     return NextResponse.json({ success: true });
   } catch (error: any) {
