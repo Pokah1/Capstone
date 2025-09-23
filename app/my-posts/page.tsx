@@ -4,26 +4,30 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Post, User } from "@/types";
 import AuthWrapper from "@/components/AuthWrapper";
+
 import DOMPurify from "dompurify";
+
+const supabase = createClient();
+const POSTS_PER_PAGE = 6;
 
 function getPreviewText(html: string, maxLength = 120): string {
   if (!html) return "";
-  const text = html.replace(/<[^>]+>/g, ""); // strip HTML
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength).trim() + "...";
+  const text = html.replace(/<[^>]+>/g, "");
+  return text.length <= maxLength
+    ? text
+    : text.slice(0, maxLength).trim() + "...";
 }
-
-const supabase = createClient();
 
 export default function UserPosts() {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<{ full_name?: string; avatar_url?: string } | null>(null);
+  const [profile, setProfile] = useState<{
+    full_name?: string;
+    avatar_url?: string;
+  } | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const postsPerPage = 6;
 
-  // Fetch user, profile, and posts once AuthWrapper ensures authentication
   useEffect(() => {
     async function fetchData() {
       const {
@@ -34,7 +38,6 @@ export default function UserPosts() {
 
       setUser(user);
 
-      // Fetch profile from "users" table
       const { data: dbProfile } = await supabase
         .from("users")
         .select("id, full_name, avatar_url")
@@ -43,18 +46,26 @@ export default function UserPosts() {
 
       if (dbProfile) setProfile(dbProfile);
 
-      // Fetch posts by user
-      const { data: posts } = await supabase
+      const { data: userPosts } = await supabase
         .from("posts")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      setPosts(posts || []);
+      setPosts(userPosts || []);
     }
 
     fetchData();
   }, []);
+
+  const displayName =
+    profile?.full_name ||
+    (user?.user_metadata?.full_name as string) ||
+    "Anonymous";
+
+  const indexOfLastPost = currentPage * POSTS_PER_PAGE;
+  const indexOfFirstPost = indexOfLastPost - POSTS_PER_PAGE;
+  const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
 
   const viewPost = (post: Post) => setSelectedPost(post);
 
@@ -65,131 +76,115 @@ export default function UserPosts() {
     setSelectedPost(null);
   };
 
-  const indexOfLastPost = currentPage * postsPerPage;
-  const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
-
-  // ✅ displayName logic same as SideNav
-  const displayName =
-    profile?.full_name ||
-    (user?.user_metadata?.full_name as string) ||
-    "Anonymous";
-
   return (
     <AuthWrapper>
-      <div className="max-w-full overflow-hidden p-6 font-poppins">
-        {/* Greeting */}
-        <div className="flex flex-col items-center text-center gap-4 mb-6">
-         <p className="text-xl md:text-2xl font-bold text-white font-playfair">
-  Welcome, <span className="text-yellow-400">{displayName}</span>
-</p>
-          <div className="bg-gray-800 rounded-lg p-4 flex flex-col items-center shadow-md w-36">
-            <div className="text-gray-400">My Posts {posts.length}</div>
-          </div>
+      {/* Greeting */}
+      <div className="max-w-full overflow-hidden pl-12 sm:pl-6 pr-4">
+        <p className="text-xl sm:text-2xl md:text-3xl font-playfair font-bold text-white">
+          Welcome, <span className="text-yellow-400">{displayName}</span>
+        </p>
+        <div className="bg-gray-800 rounded-lg p-2 sm:p-3 px-4 sm:px-5 shadow-md inline-block mt-2">
+          <p className="text-gray-400 text-xs sm:text-sm md:text-base">
+            My Posts: {posts.length}
+          </p>
         </div>
+      </div>
 
-        {selectedPost ? (
-          <article className="max-w-4xl mx-auto bg-gray-800 rounded-2xl p-6 shadow-2xl space-y-6 text-white">
-            {selectedPost.cover_url && (
-              <img
-                src={selectedPost.cover_url}
-                alt={selectedPost.title}
-                className="w-full max-h-[450px] object-cover rounded-lg shadow-md"
-              />
-            )}
-           <h2 className="text-2xl md:text-3xl font-bold text-yellow-400 text-center font-playfair">
-  {selectedPost.title}
-</h2>
-            <div
-              className="prose prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedPost.content) }}
+      {/* Selected Post */}
+      {selectedPost ? (
+        <article className="max-w-4xl w-full mx-auto px-4 bg-gray-800 rounded-2xl p-4 sm:p-6 shadow-2xl space-y-6 text-white mt-6">
+          {selectedPost.cover_url && (
+            <img
+              src={selectedPost.cover_url}
+              alt={selectedPost.title}
+              className="w-full max-h-[300px] sm:max-h-[400px] object-cover rounded-lg shadow-md"
             />
-            <div className="flex justify-between gap-4">
+          )}
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-playfair font-bold text-yellow-400 text-center">
+            {selectedPost.title}
+          </h2>
+          <div
+            className="prose prose-invert text-gray-300 max-w-none overflow-auto"
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(selectedPost.content),
+            }}
+          />
+          <div className="flex flex-col sm:flex-row justify-between gap-4 mt-4">
+            <button
+              onClick={() => setSelectedPost(null)}
+              className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-black hover:bg-blue-900 hover:text-white transition"
+            >
+              Back to Posts
+            </button>
+            <button
+              onClick={() => selectedPost?.id && deletePost(selectedPost.id)}
+              className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold"
+            >
+              Delete Post
+            </button>
+          </div>
+        </article>
+      ) : (
+        <>
+          {/* Posts Grid */}
+          {currentPosts.length > 0 ? (
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 px-4 sm:px-6 mt-6">
+              {currentPosts.map((post) => (
+                <article
+                  key={post.id}
+                  onClick={() => viewPost(post)}
+                  className="bg-gray-800 rounded-2xl shadow-md hover:shadow-xl transition transform hover:-translate-y-1 cursor-pointer overflow-hidden"
+                >
+                  {post.cover_url && (
+                    <img
+                      src={post.cover_url}
+                      alt={post.title}
+                      className="w-full h-40 sm:h-44 md:h-48 object-cover"
+                    />
+                  )}
+                  <div className="p-3 sm:p-4">
+                    <h3 className="text-lg sm:text-xl font-playfair font-bold text-yellow-400 mb-2">
+                      {post.title}
+                    </h3>
+                    <p className="text-gray-300 text-sm sm:text-base line-clamp-4">
+                      {getPreviewText(post.content)}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </section>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-[60vh] text-gray-400 text-center px-4">
+              <p>You haven’t created any posts yet.</p>
+            </div>
+          )}
+
+          {/* Pagination */}
+          {currentPosts.length > 0 && (
+            <div className="flex justify-between mt-8 w-full px-4 sm:px-6">
               <button
-                onClick={() => setSelectedPost(null)}
-               className={`
-      px-4 py-2 rounded-lg border border-gray-300 
-      bg-white text-black cursor-pointer transition 
-      duration-300 ease-in-out hover:bg-blue-900 hover:text-white 
-      disabled:opacity-50 disabled:cursor-not-allowed
-    `}>
-                Back to Posts
-              </button>
-              <button
-                onClick={() => selectedPost?.id && deletePost(selectedPost.id)}
-                className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold"
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-black hover:bg-blue-900 hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Delete Post
+                Previous
+              </button>
+
+              <button
+                onClick={() =>
+                  setCurrentPage((prev) =>
+                    indexOfLastPost < posts.length ? prev + 1 : prev
+                  )
+                }
+                disabled={indexOfLastPost >= posts.length}
+                className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-black hover:bg-blue-900 hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
               </button>
             </div>
-          </article>
-        ) : (
-          <>
-            {currentPosts.length > 0 ? (
-              <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {currentPosts.map((post) => (
-                  <article
-                    key={post.id}
-                    onClick={() => viewPost(post)}
-                    className="bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition transform hover:-translate-y-1 cursor-pointer overflow-hidden"
-                  >
-                    {post.cover_url && (
-                      <img
-                        src={post.cover_url}
-                        alt={post.title}
-                        className="w-full h-44 object-cover"
-                      />
-                    )}
-                    <div className="p-4">
-                      <h3 className="text-xl font-bold text-yellow-400 mb-2 font-playfair">
-  {post.title}
-</h3>
-                      <p className="text-gray-300 text-sm">{getPreviewText(post.content, 120)}</p>
-                    </div>
-                  </article>
-                ))}
-              </section>
-            ) : (
-              <p className="text-center text-gray-400 mt-6">
-                You haven’t created any posts yet.
-              </p>
-            )}
-
-            {/* Pagination */}
-            <div className="flex justify-between items-center mt-8">
-  <button
-    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-    disabled={currentPage === 1}
-    className={`
-      px-4 py-2 rounded-lg border border-gray-300 
-      bg-white text-black cursor-pointer transition 
-      duration-300 ease-in-out hover:bg-blue-900 hover:text-white 
-      disabled:opacity-50 disabled:cursor-not-allowed
-    `}
-  >
-    Previous
-  </button>
-  <button
-    onClick={() =>
-      setCurrentPage((prev) =>
-        indexOfLastPost < posts.length ? prev + 1 : prev
-      )
-    }
-    disabled={indexOfLastPost >= posts.length}
-    className={`
-      px-4 py-2 rounded-lg border border-gray-300 
-      bg-white text-black cursor-pointer transition 
-      duration-300 ease-in-out hover:bg-blue-900 hover:text-white 
-      disabled:opacity-50 disabled:cursor-not-allowed
-    `}
-  >
-    Next
-  </button>
-</div>
-
-          </>
-        )}
-      </div>
+          )}
+        </>
+      )}
     </AuthWrapper>
   );
 }

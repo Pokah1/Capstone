@@ -27,7 +27,9 @@ export default function EditorPage() {
   // Load user
   useEffect(() => {
     const loadUser = async () => {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
       if (!authUser) return;
 
       setUser(authUser);
@@ -39,10 +41,9 @@ export default function EditorPage() {
         .single();
 
       const name =
-        profile?.full_name ||
-        (authUser.user_metadata?.full_name as string) ||
-        authUser.email ||
-        "Anonymous";
+        profile?.full_name && profile.full_name !== "Anonymous"
+          ? profile.full_name
+          : authUser?.email || "Anonymous";
 
       setAuthorName(name);
     };
@@ -59,26 +60,35 @@ export default function EditorPage() {
   }, []);
 
   // Save or update post
- const handleSave = async (title: string, content: string, cover_url: string) => {
-  if (!user?.id) return;
+  const handleSave = async (
+    title: string,
+    content: string,
+    cover_url: string
+  ) => {
+    if (!user?.id) return;
 
-  let newPost: Post
+    let newPost: Post;
 
-  if (editingPost) {
-    newPost = await updatePost(editingPost.id as string, title, content, cover_url);
-    setPosts((prev) =>
-    prev.map((p) => (p.id === editingPost.id ? newPost: p))
-    );
-    setEditingPost(null);
-    alert("Post updated successfully");
-  } else {
-    newPost = await savePost(title, content, cover_url, user.id, authorName);
-    if (newPost) {
-      setPosts((prev) => [newPost, ...prev]);
-      alert("Post saves successfully");
+    if (editingPost) {
+      newPost = await updatePost(
+        editingPost.id as string,
+        title,
+        content,
+        cover_url
+      );
+      setPosts((prev) =>
+        prev.map((p) => (p.id === editingPost.id ? newPost : p))
+      );
+      setEditingPost(null);
+      alert("Post updated successfully");
+    } else {
+      newPost = await savePost(title, content, cover_url, user.id, authorName);
+      if (newPost) {
+        setPosts((prev) => [newPost, ...prev]);
+        alert("Post saves successfully");
+      }
     }
-  }
- };
+  };
 
   return (
     <AuthWrapper>
@@ -86,7 +96,7 @@ export default function EditorPage() {
         {/* Dashboard Button */}
         <header className="flex justify-between items-center flex-wrap gap-2">
           <button
-            className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-black font-medium transition hover:bg-blue-900 hover:text-white"
+            className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-black font-medium transition hover:bg-[#06093b]  hover:text-white"
             onClick={() => router.push("/dashboard")}
           >
             Dashboard

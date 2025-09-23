@@ -153,38 +153,37 @@ const MenuBar = ({ editor }: { editor: any }) => {
 
 const Editor: React.FC<EditorProps> = ({ onChange, initialContent = "", editable = true }) => {
   const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        bulletList: false,
-        orderedList: false,
-        listItem: false,
-        codeBlock: false, 
-      }),
-      TextStyle,
-      Color,
-      Highlight,
-      Underline,
-      Strike,
-      BulletList,
-      OrderedList,
-      ListItem,
-      CodeBlockLowlight.configure({
-  lowlight,
-}),
-
-
-    ],
-    content: initialContent || "",
-    editable,
-    immediatelyRender: false,
-    onUpdate: ({ editor }) => onChange(editor.getHTML()),
-    editorProps: {
-      attributes: {
-         class:
-      "prose prose-invert min-h-[250px] w-full outline-none p-3 rounded-lg bg-[#0d1117] text-gray-100 leading-relaxed break-words",
-  },
+  extensions: [
+    StarterKit.configure({
+      bulletList: false,
+      orderedList: false,
+      listItem: false,
+      codeBlock: false,
+      strike: false,     // disable duplicate
+      underline: false,  // disable duplicate
+    }),
+    TextStyle,
+    Color,
+    Highlight,
+    Underline,  // add back manually
+    Strike,     // add back manually
+    BulletList,
+    OrderedList,
+    ListItem,
+    CodeBlockLowlight.configure({ lowlight }),
+  ],
+  content: initialContent || "",
+  editable,
+  immediatelyRender: false,
+  onUpdate: ({ editor }) => onChange(editor.getHTML()),
+  editorProps: {
+    attributes: {
+      class:
+        "prose prose-invert min-h-[250px] w-full outline-none p-3 rounded-lg bg-[#0d1117] text-gray-100 leading-relaxed break-words",
     },
-  });
+  },
+});
+
 
   useEffect(() => {
     if (editor && initialContent && editor.getHTML() !== initialContent) {

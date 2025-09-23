@@ -1,17 +1,26 @@
-import SideNav from "@/components/sideNav/sideNav";
+"use client"
+import React, { useEffect, useState } from "react"
+import SideNav from "@/components/sideNav/sideNav"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex">
-      {/* Fixed width sidebar */}
-      <aside className="w-54 shrink-0">
-        <SideNav />
-      </aside>
+  const [mounted, setMounted] = useState(false)
 
-      {/* Main content takes remaining space */}
-      <main className="flex-1 p-6">
-        {children}
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Prevent render before hydration
+  if (!mounted) return null
+
+  return (
+    <div className="flex h-screen w-screen">
+      {/* Sidebar */}
+      <SideNav />
+
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto transition-all duration-300">
+        <div className="p-4 lg:p-6">{children}</div>
       </main>
     </div>
-  );
+  )
 }

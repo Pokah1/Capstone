@@ -23,28 +23,33 @@ const UserGrowthChart = () => {
   });
 
   const options = {
+    responsive: true,
+    maintainAspectRatio: false as const, // allow container height
     scales: {
       x: {
         display: true,
         grid: { display: false },
+        ticks: { color: '#e5e7eb' }, // gray-200
       },
       y: {
         display: true,
         beginAtZero: true,
-        grid: { display: true },
+        grid: { color: 'rgba(255,255,255,0.1)' },
+        ticks: { color: '#e5e7eb' },
       },
     },
-    responsive: true,
-    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        labels: { color: '#f3f4f6' }, // gray-100
+      },
+    },
   };
 
   const supabase = createClient();
 
   useEffect(() => {
     const fetchUserSignups = async () => {
-      const { data: users, error } = await supabase
-        .from('users')
-        .select('created_at');
+      const { data: users, error } = await supabase.from('users').select('created_at');
 
       if (error) {
         console.error('Error fetching users:', error);
@@ -57,7 +62,7 @@ const UserGrowthChart = () => {
     const updateChart = (users: any[]) => {
       const groupedByYear: Record<number, number[]> = {};
 
-      users.forEach(user => {
+      users.forEach((user) => {
         const createdAt = new Date(user.created_at);
         const year = createdAt.getFullYear();
         const month = createdAt.getMonth();
@@ -68,7 +73,6 @@ const UserGrowthChart = () => {
         groupedByYear[year][month]++;
       });
 
-      // Assign colors per year so lines are distinct
       const colors = [
         'rgba(75, 192, 192, 1)',
         'rgba(255, 99, 132, 1)',
@@ -78,7 +82,10 @@ const UserGrowthChart = () => {
       ];
 
       setLineData({
-        labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+        labels: [
+          'Jan','Feb','Mar','Apr','May','Jun',
+          'Jul','Aug','Sep','Oct','Nov','Dec',
+        ],
         datasets: Object.entries(groupedByYear).map(([year, months], index) => ({
           label: `Signups ${year}`,
           data: months,
@@ -90,19 +97,14 @@ const UserGrowthChart = () => {
       });
     };
 
-    // Initial fetch
     fetchUserSignups();
 
-    // Realtime subscription
     const channel = supabase
       .channel('user-growth')
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'users' },
-        (payload) => {
-          console.log('New user inserted:', payload);
-          fetchUserSignups();
-        }
+        () => fetchUserSignups()
       )
       .subscribe();
 
@@ -112,12 +114,13 @@ const UserGrowthChart = () => {
   }, [supabase]);
 
   return (
-    <div className="flex flex-col items-center w-full bg-[#0f152b] border border-gray-300 rounded-lg p-5 shadow-md">
-      <h2 className="text-2xl mb-2 text-white">User Growth (Multi-Year)</h2>
-      <div className="w-full h-[400px]">
+    <div className="flex flex-col items-center w-full bg-[#0f152b] border border-gray-700 rounded-lg p-5 shadow-md">
+      <h2 className="text-lg md:text-xl font-bold text-white mb-3">📈 User Growth (Multi-Year)</h2>
+      {/* 👇 responsive chart container */}
+      <div className="w-full h-[300px] md:h-[400px]">
         <LineChart data={lineData} options={options} />
       </div>
-      <p className="text-base text-gray-50 mt-2 text-center">
+      <p className="text-sm text-gray-400 mt-3 text-center max-w-md">
         This chart shows the number of new users per month, separated by year.
       </p>
     </div>

@@ -6,8 +6,10 @@ interface FooterBottomProps {
 
 const FooterBottom: React.FC<FooterBottomProps> = ({ className = "" }) => {
   return (
-    <div className={`text-center mt-12 mb-2.25 ${className}`}>
-      <p className="text-sm">&copy; {new Date().getFullYear()} Chatter. All rights reserved.</p>
+    <div className={`text-center mt-12 mb-3 ${className}`}>
+      <p className="text-sm sm:text-base font-poppins">
+        &copy; {new Date().getFullYear()} Chatter. All rights reserved.
+      </p>
     </div>
   );
 };

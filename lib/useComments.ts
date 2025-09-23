@@ -23,9 +23,13 @@ export function useComments(postId: string) {
 
         if (error) throw error;
 
-        const mapped = (data || []).map(c => ({
+        const mapped = (data || []).map((c) => ({
           ...c,
-          author_name: c.author_name || "Anonymous",
+          // Force "Anonymous" if author_name looks like an email or missing
+          author_name:
+            c.author_name && !c.author_name.includes("@")
+              ? c.author_name
+              : "Anonymous",
         }));
 
         setComments(mapped);
@@ -41,59 +45,118 @@ export function useComments(postId: string) {
 
   // Add a new comment
   const addComment = async (text: string) => {
-    if (!text.trim()) return;
+    if (!text.trim()) return false;
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
+      const { data: profile } = await supabase
+        .from("users")
+        .select("full_name")
+        .eq("id", user.id)
+        .single();
+
+      const authorName =
+        profile?.full_name?.trim() ||
+        user.user_metadata?.full_name?.trim() ||
+        "Anonymous";
 
       const { data, error } = await supabase
         .from("post_comments")
-        .insert([{
-          post_id: postId,
-          user_id: user?.id || null,
-          comment: text,
-          author_name: user?.user_metadata?.full_name || "Anonymous"
-        }])
+        .insert([
+          {
+            post_id: postId,
+            user_id: user.id,
+            comment: text,
+            author_name: authorName,
+          },
+        ])
         .select()
         .single();
 
       if (error || !data) throw error || new Error("Failed to insert comment");
 
-      setComments(prev => [...prev, { ...data, author_name: data.author_name || "Anonymous" }]);
+      setComments((prev) => [
+        ...prev,
+        { ...data, author_name: authorName || "Anonymous" },
+      ]);
+
+      return true;
     } catch (err) {
       console.error("Add comment error:", err);
+      return false;
     }
   };
 
-  // Delete a comment if the current user is the author
- const deleteComment = async (commentId: string) => {
+  // Edit a comment (only owner)
+  const editComment = async (commentId: string, newText: string) => {
+  if (!newText.trim()) return false;
+
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) return false;
 
-    const comment = comments.find(c => c.id === commentId);
-    if (!comment || comment.user_id !== user.id) {
-      console.warn("You can only delete your own comments");
-      return;
+    const existing = comments.find((c) => c.id === commentId);
+    if (!existing || existing.user_id !== user.id) {
+      console.warn("You can only edit your own comments");
+      return false;
     }
 
-    // Confirmation dialog
-    const confirmed = window.confirm("Are you sure you want to delete this comment?");
-    if (!confirmed) return;
-
     const { error } = await supabase
-      .from("post_comments")
-      .delete()
-      .eq("id", commentId);
+  .from("post_comments")
+  .update({ comment: newText })
+  .eq("id", commentId);
 
-    if (error) throw error;
+if (error) throw error;
+   
+    setComments((prev) =>
+  prev.map((c) =>
+    c.id === commentId
+      ? { ...c, comment: newText, updated_at: new Date().toISOString() }
+      : c
+  )
+);
 
-    setComments(prev => prev.filter(c => c.id !== commentId));
+    return true;
   } catch (err) {
-    console.error("Delete comment error:", err);
+    console.error("Edit comment error:", err);
+    return false;
   }
 };
 
 
-  return { comments, addComment, deleteComment, loading };
+  // Delete a comment if the current user is the author
+  const deleteComment = async (commentId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
+      const comment = comments.find((c) => c.id === commentId);
+      if (!comment || comment.user_id !== user.id) {
+        console.warn("You can only delete your own comments");
+        return false;
+      }
+
+      const confirmed = window.confirm(
+        "Are you sure you want to delete this comment?"
+      );
+      if (!confirmed) return false;
+
+      const { error } = await supabase
+        .from("post_comments")
+        .delete()
+        .eq("id", commentId);
+
+      if (error) throw error;
+
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+      return true;
+    } catch (err) {
+      console.error("Delete comment error:", err);
+      return false;
+    }
+  };
+
+  return { comments, addComment, editComment, deleteComment, loading };
 }

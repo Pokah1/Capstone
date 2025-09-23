@@ -1,85 +1,74 @@
-import Link from 'next/link';
-import { headers } from 'next/headers';
-import { createClient } from '@/utils/supabase/server';
-import { redirect } from 'next/navigation';
+"use client";
 
-export default async function ForgotPassword({
-  searchParams,
-}: {
-  searchParams: { message: string };
-}) {
-  const supabase = createClient();
+import Link from "next/link";
+import { forgotPassword } from "../login/actions";
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (session) {
-    return redirect('/');
-  }
-
-  const confirmReset = async (formData: FormData) => {
-    'use server';
-
-    const origin = headers().get('origin');
-    const email = formData.get('email') as string;
-    const supabase = createClient();
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${origin}/reset-password`,
-    });
-
-    if (error) {
-      return redirect('/forgot-password?message=Could not authenticate user');
-    }
-
-    return redirect(
-      '/confirm?message=Password Reset link has been sent to your email address'
-    );
-  };
-
+export default function ForgotPasswordPage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900">
-      <Link
-        href="/"
-        className="py-2 px-4 rounded-md text-white bg-indigo-700 hover:bg-indigo-800 text-sm mb-8"
+    <main className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-gray-950 to-black font-poppins text-white grid grid-cols-1 md:grid-cols-2">
+      {/* Left Branding */}
+      <div
+        className="flex flex-col justify-center items-center p-12 
+  bg-gradient-to-br from-purple-800/80 via-indigo-900/80 to-black/90 relative"
       >
-        Home
-      </Link>
-
-      <div className="w-full px-8 sm:max-w-md mx-auto mt-4">
-        <form
-          className="flex flex-col w-full gap-4"
-          action={confirmReset}
-        >
-          <label className="text-white text-lg" htmlFor="email">
-            Enter Email Address
-          </label>
-          <input
-            className="rounded-md px-4 py-2 bg-gray-800 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            name="email"
-            placeholder="you@example.com"
-            required
-          />
-
-          <button className="bg-indigo-700 rounded-md px-4 py-2 text-white hover:bg-indigo-800">
-            Confirm
-          </button>
-
-          {searchParams?.message && (
-            <p className="mt-4 p-4 bg-red-500 text-white text-center rounded-md">
-              {searchParams.message}
-            </p>
-          )}
-        </form>
-
-        <Link
-          href="/login"
-          className="mt-6 text-indigo-500 hover:underline text-sm block text-center"
-        >
-          Remember your password? Sign in
-        </Link>
+        <h1 className="text-4xl sm:text-5xl font-playfair font-bold drop-shadow-lg z-10 text-yellow-400">
+          CHATTER
+        </h1>
+        <p className="mt-6 text-lg sm:text-xl text-gray-300 max-w-md text-center z-10 leading-relaxed">
+          Discover. Share. Connect. <br />
+          Your stories belong here.
+        </p>
+        <div
+          className="absolute inset-0 
+    bg-[radial-gradient(circle_at_top_left,rgba(255,255,0,0.1),transparent_50%)]"
+        />
       </div>
-    </div>
+
+      {/* Right Form */}
+      <div className="flex flex-col justify-center items-center p-10">
+        <div className="grid gap-8 w-full max-w-lg">
+          {/* Back Link */}
+          <Link
+            href="/login"
+            className="flex items-center gap-2 text-gray-400 hover:text-yellow-400 transition w-fit"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Back to Sign In
+          </Link>
+
+          {/* Form */}
+          <form className="grid grid-cols-1 gap-6" action={forgotPassword}>
+            <div>
+              <label htmlFor="email" className="block text-sm mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                required
+                placeholder="you@example.com"
+                className="w-full px-4 py-3 rounded-lg bg-gray-800/70 border border-gray-600 text-white placeholder-gray-400 focus:ring-2 focus:ring-yellow-400 outline-none"
+              />
+            </div>
+
+            {/* Normal button instead of SubmitButton */}
+            <button
+              type="submit"
+              className="py-3 rounded-lg bg-yellow-400 text-black font-semibold hover:bg-yellow-500 transition shadow-md"
+            >
+              Send Reset Link
+            </button>
+          </form>
+        </div>
+      </div>
+    </main>
   );
 }

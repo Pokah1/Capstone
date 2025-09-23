@@ -1,36 +1,61 @@
-
-import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
-import { type CookieOptions, createServerClient } from "@supabase/ssr";
+import { NextResponse } from 'next/server'
+// The client you created from the Server-Side Auth instructions
+import { createClient } from '@/utils/supabase/server'
 
 export async function GET(request: Request) {
-  const {searchParams, origin} = new URL(request.url)
+  const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/dashboard'
+  // if "next" is in param, use it as the redirect URL
+  let next = searchParams.get("next") ?? "/dashboard"
+  if (!next.startsWith('/')) {
+    // if "next" is not a relative URL, use the default
+    next = "/dashboard"
+  }
 
   if (code) {
-    const cookieStore = cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-     {
-      cookies:{
-      get(name:string){
-        return cookieStore.get(name)?.value
-      },
-      set(name:string, value:string, options: CookieOptions){
-        cookieStore.set({name, value, ...options})
-      },
-      remove(name:string, options: CookieOptions){
-        cookieStore.delete({name, ...options})
-      },
-     },
-    }
-    )
-    const {error} = await supabase.auth.exchangeCodeForSession(code)
-    if(!error){
-      return NextResponse.redirect(`${origin}${next}`)
+    const supabase = await createClient()
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    if (!error) {
+      const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
+      const isLocalEnv = process.env.NODE_ENV === 'development'
+      if (isLocalEnv) {
+        // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
+        return NextResponse.redirect(`${origin}${next}`)
+      } else if (forwardedHost) {
+        return NextResponse.redirect(`https://${forwardedHost}${next}`)
+      } else {
+        return NextResponse.redirect(`${origin}${next}`)
+      }
     }
   }
-  return NextResponse.redirect(`${origin}/login?message=Could not login with provider`)
+
+  // return the user to an error page with instructions
+  return NextResponse.redirect(`${origin}/auth/auth-code-error`)
 }
+
+
+
+// import { createClient } from "@/utils/supabase/server";
+// import { NextResponse } from "next/server";
+
+// export async function GET(request: Request) {
+//   const url = new URL(request.url);
+//   const code = url.searchParams.get("code");
+//   const next = url.searchParams.get("next") ?? "/dashboard";
+
+//   if (code) {
+//     const supabase = await createClient();
+//     const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+//     if (!error) {
+//       // Success: go to dashboard (or whatever `next` was passed)
+//       return NextResponse.redirect(`${url.origin}${next}`);
+//     }
+
+//     console.error("OAuth session error:", error);
+//     return NextResponse.redirect(`${url.origin}/login?message=OAuth login failed`);
+//   }
+
+//   // If no code, just go back to login
+//   return NextResponse.redirect(`${url.origin}/login?message=Missing code`);
+// }

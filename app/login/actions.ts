@@ -3,24 +3,21 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation' 
 import { createClient } from '@/utils/supabase/server'
-
 import { Provider } from '@supabase/supabase-js'
-// import { getURL } from '@/utils/helper'
-import { headers } from 'next/headers'
+
+// Centralized origin for all auth redirects
+const ORIGIN = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 export async function signin(formData: FormData) {
-  const supabase = createClient()
+  const supabase = await createClient(); 
 
-  // type-casting here for convenience
-  // in practice, you should validate your inputs
-  const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
-  }
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
 
-  const { error } = await supabase.auth.signInWithPassword(data)
+  const { error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error) {
+    console.error("Signin error:", error)
     redirect("/login?message=Could not authenticate user")
   }
 
@@ -29,29 +26,27 @@ export async function signin(formData: FormData) {
 }
 
 export async function signup(formData: FormData) {
-  const supabase = createClient()
+  const supabase = await createClient(); 
 
-  // type-casting here for convenience
-  // in practice, you should validate your inputs
-  const origin = headers().get("origin")
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
   const confirmPassword = formData.get('confirmPassword') as string;
 
-  if (password!== confirmPassword) {
+  if (password !== confirmPassword) {
     redirect("/login?message=Passwords do not match")
   }
 
   const { error } = await supabase.auth.signUp({
     email,
     password,
-    options:{
-      emailRedirectTo: `${origin}/auth/confirm`,
+    options: {
+      emailRedirectTo: `${ORIGIN}/auth/confirm`,
     }
   })
 
   if (error) {
-    redirect("/login?message=Error Signing Up")
+    console.error("Signup error:", error)
+    redirect("/login?message=" + encodeURIComponent(error.message))
   }
 
   revalidatePath('/', 'layout')
@@ -59,29 +54,46 @@ export async function signup(formData: FormData) {
 }
 
 export async function signout() {
-   const supabase = createClient()
-   await supabase.auth.signOut()
-   redirect('/')
+  const supabase = await createClient(); 
+  await supabase.auth.signOut()
+  redirect('/')
 }
 
-export async function oAuthSignIn(provider:Provider){
-  if(!provider){
-    return redirect('/login?message= No provider selected')
+export async function oAuthSignIn(provider: Provider) {
+  if (!provider) {
+    redirect('/login?message=No provider selected')
   }
-  const origin = headers().get("origin")
-  const supabase = createClient();
-  const redirectUrl = `${origin}/auth/confirm`
+
+  const supabase = await createClient();
+   const redirectUrl = `${ORIGIN}/auth/callback?next=/dashboard`
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
-    options: {
-      redirectTo: redirectUrl,
-    }
+    options: { redirectTo: redirectUrl }
   })
+
   if (error) {
-    console.error("Error logging in with provider:", error);
-     redirect("/login?message=Could not login with provider")
+    console.error("OAuth sign-in error:", error)
+    console.log("OAuth data:", data)
+    redirect("/login?message=Could not login with provider")
   }
 
-
+  // Redirect to the provider's OAuth page
   return redirect(data.url)
+}
+
+export async function forgotPassword(formData: FormData) {
+  const supabase = await createClient()
+  const email = formData.get("email") as string
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${ORIGIN}/reset-password`
+  })
+
+  if (error) {
+    console.error(error)
+    redirect("/forgot-password?message=Could not send reset email")
+  }
+
+  redirect("/confirm?message=Password reset link sent to your email")
 }

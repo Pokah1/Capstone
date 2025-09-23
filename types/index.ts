@@ -51,6 +51,7 @@ export interface Comment {
   author_name: string;
   created_at?: string;
   commented_at?: string;
+   updated_at?: string;
   full_name?: string;
 }
 export interface Post {

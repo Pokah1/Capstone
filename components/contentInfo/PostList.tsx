@@ -1,6 +1,6 @@
-import Link from "next/link";
+"use client";
 
-const stripHtml = (html: string) => html.replace(/<[^>]+>/g, "");
+import Link from "next/link";
 
 type Props = {
   posts: any[];
@@ -24,13 +24,16 @@ export default function PostList({
 
   return (
     <section>
-      <h2 className="text-2xl font-playfair font-bold text-white mb-4">All Posts</h2>
+      <h2 className="text-2xl font-playfair font-bold text-white mb-4">
+        All Posts
+      </h2>
+
       <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {currentPosts.map((post) => (
           <li key={post.id} className="relative">
             <Link
               href={`/posts/${post.id}`}
-              className="block bg-[#0b0d1f] rounded-xl border border-white/20 overflow-hidden shadow-md hover:shadow-xl transform transition hover:-translate-y-1 cursor-pointer"
+              className="block bg-[#0b0d1f] rounded-xl border border-white/20 overflow-hidden shadow-md transition hover:shadow-xl cursor-pointer"
             >
               {post.cover_url && (
                 <img
@@ -39,13 +42,24 @@ export default function PostList({
                   alt={post.title}
                 />
               )}
-              <h3 className="font-playfair font-bold text-xl text-yellow-400 m-3">
-                {post.title}
-              </h3>
-              <p className="text-gray-300 text-sm m-3">
-                {stripHtml(post.content).slice(0, 80)}...
-              </p>
+
+              <div className="m-3">
+                <h3 className="font-playfair font-bold text-xl text-yellow-400">
+                  {post.title}
+                </h3>
+
+                <div
+                  className="prose prose-invert max-w-full text-gray-300 break-words overflow-hidden"
+                  style={{
+                    display: "-webkit-box",
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: "vertical",
+                  }}
+                  dangerouslySetInnerHTML={{ __html: post.content }}
+                />
+              </div>
             </Link>
+
             {post.user_id === currentUserId && (
               <button
                 onClick={() => onEdit(post)}
@@ -59,7 +73,7 @@ export default function PostList({
       </ul>
 
       {/* Pagination */}
-      <div className="flex justify-between mt-4">
+      <div className="flex justify-between mt-4 flex-wrap gap-2">
         <button
           onClick={() => setCurrentPage(currentPage - 1)}
           disabled={currentPage === 1}
@@ -69,7 +83,7 @@ export default function PostList({
         </button>
         <button
           onClick={() => setCurrentPage(currentPage + 1)}
-          disabled={indexOfLastPost >= posts.length}
+          disabled={currentPage * postsPerPage >= posts.length}
           className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-black cursor-pointer transition duration-300 hover:bg-blue-900 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Next

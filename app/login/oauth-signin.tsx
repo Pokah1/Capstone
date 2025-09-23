@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { Provider } from "@supabase/supabase-js";
 import { oAuthSignIn } from "./actions";
@@ -60,17 +60,29 @@ export function OAuthButton({ className }: OAuthButtonProps) {
   ];
 
   return (
-    <div className={`flex gap-4 ${className || ""}`}>
+    <div className={`flex flex-col gap-4 w-full ${className || ""}`}>
       {oAuthProviders.map((provider) => (
         <button
           key={provider.name}
-          className="flex items-center justify-center gap-3 rounded-lg border border-gray-300 px-4 py-2 bg-white text-black hover:bg-blue-900 hover:text-white transition-colors"
+          className={`
+        flex items-center justify-center gap-3 
+        rounded-xl px-5 py-3 w-full font-medium 
+        shadow-md transition-all duration-300 transform 
+        hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2
+        ${
+          provider.name === "github"
+            ? "bg-gray-900 text-white hover:bg-gray-800 focus:ring-gray-700"
+            : "bg-white border border-gray-300 text-gray-800 hover:bg-gray-100 focus:ring-blue-500"
+        }
+      `}
           onClick={async () => {
             await oAuthSignIn(provider.name);
           }}
         >
-          {provider.icon}
-          <span className="font-medium">Login with {provider.displayName}</span>
+          <span className="w-6 h-6">{provider.icon}</span>
+          <span className="flex-1 text-center">
+            Continue with {provider.displayName}
+          </span>
         </button>
       ))}
     </div>

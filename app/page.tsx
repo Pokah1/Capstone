@@ -1,16 +1,22 @@
-
 import "./globals.css";
 import { createClient } from "@/utils/supabase/server";
-import Header from '@/components/firstPage/header'
+import Header from "@/components/firstPage/header";
 import Footer from "@/components/firstPage/footer";
+import ToastWrapper from "@/components/ToastWrapper";
 
-export default async function Index() {
+export default async function Index({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const params = await searchParams;
+  const code = typeof params.code === "string" ? params.code : undefined;
+
   const canInitSupabaseClient = () => {
-  
     try {
       createClient();
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   };
@@ -18,10 +24,13 @@ export default async function Index() {
   const isSupabaseConnected = canInitSupabaseClient();
 
   return (
-  <div>
+    <div className="w-full flex flex-col">
       <Header />
-      <Footer/>
-   
-  </div>
+      <ToastWrapper code={code} />
+      <main className="w-full flex flex-col items-center justify-center">
+        {/* Placeholder for page content */}
+      </main>
+      <Footer />
+    </div>
   );
 }

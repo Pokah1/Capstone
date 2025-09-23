@@ -22,31 +22,50 @@ const MonthlyPostsChart = () => {
       {
         label: 'Monthly Posts',
         data: [],
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        backgroundColor: 'rgba(75, 192, 192, 0.5)',
         borderColor: 'rgba(75, 192, 192, 1)',
         borderWidth: 1,
       },
     ],
   });
 
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false as const, // allow custom height
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: { color: '#e5e7eb' }, // gray-200
+        grid: { color: 'rgba(255,255,255,0.1)' },
+      },
+      x: {
+        ticks: { color: '#e5e7eb' },
+        grid: { display: false },
+      },
+    },
+    plugins: {
+      legend: {
+        labels: { color: '#f3f4f6' }, // gray-100
+      },
+    },
+  };
+
   const supabase = createClient();
 
   useEffect(() => {
     const fetchPostCounts = async () => {
-      const { data: posts, error } = await supabase
-        .from('posts')
-        .select('created_at');
+      const { data: posts, error } = await supabase.from('posts').select('created_at');
 
       if (error) {
         console.error('Error fetching posts:', error);
         return;
       }
 
-      // Generate last 12 months labels (e.g., Sep 2023 -> Aug 2024)
       const labels: string[] = [];
       const monthlyCounts: Record<string, number> = {};
-
       const now = new Date();
+
+      // last 12 months
       for (let i = 11; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
         const label = d.toLocaleString('default', { month: 'short', year: 'numeric' });
@@ -54,7 +73,6 @@ const MonthlyPostsChart = () => {
         monthlyCounts[label] = 0;
       }
 
-      // Count posts in those months
       posts.forEach((post) => {
         const d = new Date(post.created_at);
         const label = d.toLocaleString('default', { month: 'short', year: 'numeric' });
@@ -69,7 +87,7 @@ const MonthlyPostsChart = () => {
           {
             label: 'Monthly Posts',
             data: labels.map((label) => monthlyCounts[label]),
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            backgroundColor: 'rgba(75, 192, 192, 0.5)',
             borderColor: 'rgba(75, 192, 192, 1)',
             borderWidth: 1,
           },
@@ -81,11 +99,14 @@ const MonthlyPostsChart = () => {
   }, [supabase]);
 
   return (
-    <div className="flex flex-col items-center w-full bg-[#0f152b] border border-gray-300 rounded-lg p-5 shadow-md">
-      <h2 className="text-2xl mb-2 text-white">Monthly Posts</h2>
-      <BarChart data={barData} />
-      <p className="text-base text-gray-50 mt-2 text-center">
-        The Monthly Posts chart illustrates the volume of content created each month. A consistent increase indicates growing user activity and content creation.
+    <div className="flex flex-col items-center w-full bg-[#0f152b] border border-gray-700 rounded-lg p-5 shadow-md">
+      <h2 className="text-lg md:text-xl font-bold text-white mb-3">📊 Monthly Posts</h2>
+      {/* 👇 give chart container a fixed height */}
+      <div className="w-full h-[300px] md:h-[400px]">
+        <BarChart data={barData} options={options} />
+      </div>
+      <p className="text-sm text-gray-400 mt-3 text-center max-w-md">
+        Tracks how many posts were created each month. Growth here means the community is getting more active.
       </p>
     </div>
   );

@@ -15,6 +15,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
   title: "Chatter Project",
   description: "This is Content creation platform for developers and readers",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/favicon-32x32.png",
+  },
 };
 
 export default function RootLayout({
@@ -24,6 +28,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={GeistSans.className}>
+      <head>
+        <link rel="icon" href="/favicon.ico" />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/favicon-32x32.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="/favicon-16x16.png"
+        />
+        <title>Chatter Project</title>
+      </head>
       <body className="bg-slate-900 text-foreground">
         <main className="min-h-screen flex flex-col items-center">
           {children}
