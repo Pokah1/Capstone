@@ -21,7 +21,7 @@ export default function ContentAnalytics({ analyticsData }: ContentAnalyticsProp
       <div className="mb-5">
         <h2 className="text-xl sm:text-2xl font-playfair font-bold text-white">Content Analytics</h2>
         <p className="text-sm sm:text-base text-gray-400 mt-1 font-poppins">
-          Insights into content performance and audience.
+          Insights into total content performance and audience.
         </p>
       </div>
 

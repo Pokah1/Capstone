@@ -73,7 +73,7 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-white/80 w-full flex flex-col items-center text-black font-poppins py-12 px-4 sm:px-6 lg:px-16">
+    <footer className="bg-gray-50 w-full flex flex-col items-center text-black font-poppins py-12 px-4 sm:px-6 lg:px-16">
       <div className="w-full max-w-6xl flex flex-col gap-12">
         {/* Grid Layout for Links & Social */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -133,7 +133,7 @@ const Footer: React.FC = () => {
               />
               <button
                 type="submit"
-                className="bg-yellow-600 text-white p-2 rounded hover:bg-yellow-500 transition-colors font-poppins text-base"
+                className="bg-yellow-600 text-white p-2 rounded hover:bg-yellow-700 transition-colors font-poppins text-base"
               >
                 Subscribe
               </button>

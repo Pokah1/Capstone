@@ -1,7 +1,8 @@
-import Link from "next/link"
+import Link from "next/link";
+import { PenLine } from "lucide-react";
 
 interface DashboardHeaderProps {
-  greeting: string
+  greeting: { text: string; icon: React.ReactNode };
 }
 
 export default function DashboardHeader({ greeting }: DashboardHeaderProps) {
@@ -9,8 +10,9 @@ export default function DashboardHeader({ greeting }: DashboardHeaderProps) {
     <header className="w-full bg-primary text-primary-foreground py-4 px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
       {/* Greeting Button */}
       <div className="flex items-center">
-        <button className="bg-white text-black py-2 px-3 rounded-lg border border-gray-300 hover:bg-blue-950 hover:text-white font-playfair font-bold text-sm sm:text-base">
-          🌄 {greeting}
+        <button className="flex items-center gap-2 bg-white text-black py-2 px-3 rounded-lg border border-gray-300 hover:bg-blue-950 hover:text-white font-playfair font-bold text-sm sm:text-base">
+          {greeting.icon}
+          {greeting.text}
         </button>
       </div>
 
@@ -18,7 +20,8 @@ export default function DashboardHeader({ greeting }: DashboardHeaderProps) {
       <nav className="flex items-center gap-3 sm:gap-4 md:ml-auto flex-wrap">
         <Link href="/content">
           <button className="bg-white text-black py-2 px-3 sm:px-4 rounded-lg border border-gray-300 hover:bg-blue-950 hover:text-white font-poppins font-semibold text-sm md:text-base">
-            Write ✍️
+            <PenLine className="inline w-4 h-4 mr-1" />
+            Write
           </button>
         </Link>
         <Link href="/about">
@@ -33,5 +36,5 @@ export default function DashboardHeader({ greeting }: DashboardHeaderProps) {
         </Link>
       </nav>
     </header>
-  )
+  );
 }

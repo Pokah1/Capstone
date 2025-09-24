@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Logo from "@/app/assets/logo.png";
-import { Feather } from "lucide-react";
+import { PenLine } from "lucide-react";
 
 const Header: React.FC = () => {
   const [text] = useTypewriter({
@@ -80,7 +80,7 @@ const Header: React.FC = () => {
 
         <h1 className="flex items-center gap-2 text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-playfair font-bold mb-6">
           CHATTER{" "}
-          <Feather className="w-7 h-7 sm:w-9 sm:h-9 lg:w-11 lg:h-11 xl:w-12 xl:h-12 text-yellow-400" />
+          <PenLine className="w-7 h-7 sm:w-9 sm:h-9 lg:w-11 lg:h-11 xl:w-12 xl:h-12 text-yellow-400" />
         </h1>
 
         {/* Subheading */}

@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import LineChart from '@/components/charts/lineChart';
 import { createClient } from '@/utils/supabase/client';
+import { TrendingUp } from "lucide-react"; 
+
 
 interface ChartData {
   labels: string[];
@@ -115,7 +117,10 @@ const UserGrowthChart = () => {
 
   return (
     <div className="flex flex-col items-center w-full bg-[#0f152b] border border-gray-700 rounded-lg p-5 shadow-md">
-      <h2 className="text-lg md:text-xl font-bold text-white mb-3">📈 User Growth (Multi-Year)</h2>
+      <h2 className="flex items-center gap-2 text-lg md:text-xl font-bold text-white mb-3">
+  <TrendingUp className="w-5 h-5 text-yellow-400" />
+  User Growth (Multi-Year)
+</h2>
       {/* 👇 responsive chart container */}
       <div className="w-full h-[300px] md:h-[400px]">
         <LineChart data={lineData} options={options} />

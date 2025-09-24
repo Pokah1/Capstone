@@ -11,6 +11,10 @@ import SearchComponent from "@/components/dashboard/Search";
 import PersonalizedFeed from "@/components/dashboard/PersonalizedFeed";
 import DiscoverSection from "@/components/dashboard/DiscoverSection";
 import { fetchAnalyticsData } from "@/utils/analyticsService";
+import { Sun, Moon, Sunrise, Sunset, icons } from "lucide-react";
+import { text } from "stream/consumers";
+
+
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
@@ -39,15 +43,20 @@ export default function Dashboard() {
     getAnalyticsData();
   }, []);
 
-  const greetings = () => {
-    const hours = new Date().getHours();
-    return hours < 12 ? "Good Morning!" : hours < 17 ? "Good Afternoon!" : "Good Evening!";
+  const getGreeting = () => {
+  const hours = new Date().getHours();
+   
+    return hours < 12
+    ? {text: "Good Morning", icon: <Sun className="w-4 h-4 text-yellow-400 mr-1"/>}
+    : hours < 17
+    ? { text: "Good Afternoon!", icon: <Sunset className="w-4 h-4 text-orange-400 mr-1" /> }
+    : { text: "Good Evening!", icon: <Moon className="w-4 h-4 text-blue-400 mr-1" /> };
   };
 
   return (
     <AuthWrapper>
       <div className="max-w-full overflow-hidden">
-      <DashboardHeader greeting={greetings()} />
+      <DashboardHeader greeting={getGreeting()} />
       <main className="w-full flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
         <section className="col-span-1 md:col-span-2 space-y-6">
           <SearchComponent />
