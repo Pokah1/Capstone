@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { UserProfile } from "@/types/user";
+import ToastWrapper from "../ToastWrapper";
 
 interface SideNavProps {
   isCompact?: boolean;
@@ -25,6 +26,9 @@ const SideNav: React.FC<SideNavProps> = ({ isCompact = false }) => {
   const [authUser, setAuthUser] = useState<any>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type?: "success" | "error" } | null>(null);
+
+
   const router = useRouter();
   const supabase = createClient();
 
@@ -51,12 +55,17 @@ const SideNav: React.FC<SideNavProps> = ({ isCompact = false }) => {
   const signOut = async () => {
     const confirmed = window.confirm("Log out?");
     if (!confirmed) return;
+
+
     const { error } = await supabase.auth.signOut();
     if (!error) {
       localStorage.clear();
       setAuthUser(null);
       setProfile(null);
+      setToast({message: "Signed out successfully!", type: "success"})
       router.push("/");
+    } else {
+      setToast({message: "Failed to sign out.", type: "error"})
     }
   };
 
@@ -83,7 +92,13 @@ const SideNav: React.FC<SideNavProps> = ({ isCompact = false }) => {
     { title: "Logout", icon: LogOut, onClick: signOut },
   ];
 
-  const displayName = profile?.full_name || authUser?.email || "Guest";
+
+  const displayName =
+  profile?.full_name && profile.full_name !== "Anonymous"
+    ? profile.full_name
+    : authUser?.email || "Guest";
+
+    
   const displayAvatar = profile?.avatar_url || profileImage;
 
   const handleClick = (onClick?: () => void) => {
@@ -186,6 +201,9 @@ const SideNav: React.FC<SideNavProps> = ({ isCompact = false }) => {
           </div>
         </nav>
       </aside>
+
+      {/* Toast*/}
+      {toast && <ToastWrapper message={toast.message} type={toast.type}/>}
     </>
   );
 };

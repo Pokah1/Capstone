@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { Post, User } from "@/types";
 import AuthWrapper from "@/components/AuthWrapper";
-
+import ToastWrapper from "@/components/ToastWrapper";
 import DOMPurify from "dompurify";
 
 const supabase = createClient();
@@ -13,27 +13,23 @@ const POSTS_PER_PAGE = 6;
 function getPreviewText(html: string, maxLength = 120): string {
   if (!html) return "";
   const text = html.replace(/<[^>]+>/g, "");
-  return text.length <= maxLength
-    ? text
-    : text.slice(0, maxLength).trim() + "...";
+  return text.length <= maxLength ? text : text.slice(0, maxLength).trim() + "...";
 }
 
 export default function UserPosts() {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<{
-    full_name?: string;
-    avatar_url?: string;
-  } | null>(null);
+  const [profile, setProfile] = useState<{ full_name?: string; avatar_url?: string } | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [toast, setToast] = useState<{ message: string; type?: "success" | "error" } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  // Fetch user and posts
   useEffect(() => {
     async function fetchData() {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
+      const { data: { user }, error } = await supabase.auth.getUser();
       if (error || !user) return;
 
       setUser(user);
@@ -59,9 +55,7 @@ export default function UserPosts() {
   }, []);
 
   const displayName =
-    profile?.full_name ||
-    (user?.user_metadata?.full_name as string) ||
-    "Anonymous";
+    profile?.full_name || (user?.user_metadata?.full_name as string) || "Anonymous";
 
   const indexOfLastPost = currentPage * POSTS_PER_PAGE;
   const indexOfFirstPost = indexOfLastPost - POSTS_PER_PAGE;
@@ -69,11 +63,24 @@ export default function UserPosts() {
 
   const viewPost = (post: Post) => setSelectedPost(post);
 
-  const deletePost = async (postId: string) => {
-    if (!confirm("Are you sure you want to delete this post?")) return;
-    await supabase.from("posts").delete().eq("id", postId);
-    setPosts(posts.filter((post) => post.id !== postId));
-    setSelectedPost(null);
+  // Request deletion (opens confirm modal)
+  const requestDelete = (postId: string) => {
+    setDeleteTarget(postId);
+  };
+
+  // Confirm delete
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await supabase.from("posts").delete().eq("id", deleteTarget);
+      setPosts(posts.filter((p) => p.id !== deleteTarget));
+      setSelectedPost(null);
+      setToast({ message: "Post deleted successfully!", type: "success" });
+    } catch {
+      setToast({ message: "Failed to delete post.", type: "error" });
+    } finally {
+      setDeleteTarget(null);
+    }
   };
 
   return (
@@ -84,9 +91,7 @@ export default function UserPosts() {
           Welcome, <span className="text-yellow-400">{displayName}</span>
         </p>
         <div className="bg-gray-800 rounded-lg p-2 sm:p-3 px-4 sm:px-5 shadow-md inline-block mt-2">
-          <p className="text-gray-400 text-xs sm:text-sm md:text-base">
-            My Posts: {posts.length}
-          </p>
+          <p className="text-gray-400 text-xs sm:text-sm md:text-base">My Posts: {posts.length}</p>
         </div>
       </div>
 
@@ -105,9 +110,7 @@ export default function UserPosts() {
           </h2>
           <div
             className="prose prose-invert text-gray-300 max-w-none overflow-auto"
-            dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(selectedPost.content),
-            }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedPost.content) }}
           />
           <div className="flex flex-col sm:flex-row justify-between gap-4 mt-4">
             <button
@@ -117,7 +120,7 @@ export default function UserPosts() {
               Back to Posts
             </button>
             <button
-              onClick={() => selectedPost?.id && deletePost(selectedPost.id)}
+              onClick={() => selectedPost?.id && requestDelete(selectedPost.id)}
               className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold"
             >
               Delete Post
@@ -172,9 +175,7 @@ export default function UserPosts() {
 
               <button
                 onClick={() =>
-                  setCurrentPage((prev) =>
-                    indexOfLastPost < posts.length ? prev + 1 : prev
-                  )
+                  setCurrentPage((prev) => (indexOfLastPost < posts.length ? prev + 1 : prev))
                 }
                 disabled={indexOfLastPost >= posts.length}
                 className="px-4 py-2 rounded-lg border border-gray-300 bg-white text-black hover:bg-blue-900 hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
@@ -185,6 +186,32 @@ export default function UserPosts() {
           )}
         </>
       )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg text-white space-y-4 text-center">
+            <p>Are you sure you want to delete this post?</p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={confirmDelete}
+                className="px-4 py-2 bg-red-600 rounded hover:bg-red-700"
+              >
+                Yes, Delete
+              </button>
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="px-4 py-2 bg-gray-500 rounded hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && <ToastWrapper message={toast.message} type={toast.type} />}
     </AuthWrapper>
   );
 }

@@ -1,18 +1,16 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation' 
+import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { Provider } from '@supabase/supabase-js'
-
-// Centralized origin for all auth redirects
-const ORIGIN = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+import { getURL } from '@/utils/getURL'
 
 export async function signin(formData: FormData) {
-  const supabase = await createClient(); 
+  const supabase = await createClient()
 
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
 
   const { error } = await supabase.auth.signInWithPassword({ email, password })
 
@@ -26,11 +24,11 @@ export async function signin(formData: FormData) {
 }
 
 export async function signup(formData: FormData) {
-  const supabase = await createClient(); 
+  const supabase = await createClient()
 
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
-  const confirmPassword = formData.get('confirmPassword') as string;
+  const email = formData.get('email') as string
+  const password = formData.get('password') as string
+  const confirmPassword = formData.get('confirmPassword') as string
 
   if (password !== confirmPassword) {
     redirect("/login?message=Passwords do not match")
@@ -40,8 +38,8 @@ export async function signup(formData: FormData) {
     email,
     password,
     options: {
-      emailRedirectTo: `${ORIGIN}/auth/confirm`,
-    }
+      emailRedirectTo: `${getURL()}auth/confirm`, // ✅ dynamic
+    },
   })
 
   if (error) {
@@ -54,7 +52,7 @@ export async function signup(formData: FormData) {
 }
 
 export async function signout() {
-  const supabase = await createClient(); 
+  const supabase = await createClient()
   await supabase.auth.signOut()
   redirect('/')
 }
@@ -64,22 +62,20 @@ export async function oAuthSignIn(provider: Provider) {
     redirect('/login?message=No provider selected')
   }
 
-  const supabase = await createClient();
-   const redirectUrl = `${ORIGIN}/auth/callback?next=/dashboard`
+  const supabase = await createClient()
+  const redirectUrl = `${getURL()}auth/callback?next=/dashboard`
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
-    options: { redirectTo: redirectUrl }
+    options: { redirectTo: redirectUrl },
   })
 
   if (error) {
     console.error("OAuth sign-in error:", error)
-    console.log("OAuth data:", data)
     redirect("/login?message=Could not login with provider")
   }
 
-  // Redirect to the provider's OAuth page
-  return redirect(data.url)
+  return redirect(data.url) // send user to provider
 }
 
 export async function forgotPassword(formData: FormData) {
@@ -87,7 +83,7 @@ export async function forgotPassword(formData: FormData) {
   const email = formData.get("email") as string
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${ORIGIN}/reset-password`
+    redirectTo: `${getURL()}reset-password`, // ✅ dynamic
   })
 
   if (error) {

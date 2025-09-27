@@ -2,7 +2,7 @@ import "./globals.css";
 import { createClient } from "@/utils/supabase/server";
 import Header from "@/components/firstPage/header";
 import Footer from "@/components/firstPage/footer";
-import ToastWrapper from "@/components/ToastWrapper";
+import ToastWrapper from "@/components/LoginToastWrapper";
 
 export default async function Index({
   searchParams,

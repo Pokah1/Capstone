@@ -7,12 +7,10 @@ import "@uploadthing/react/styles.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
-const defaultUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "http://localhost:3000";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(defaultUrl),
+  metadataBase: new URL(appUrl),
   title: "Chatter Project",
   description: "This is Content creation platform for developers and readers",
   icons: {

@@ -35,27 +35,4 @@ export async function GET(request: Request) {
 
 
 
-// import { createClient } from "@/utils/supabase/server";
-// import { NextResponse } from "next/server";
 
-// export async function GET(request: Request) {
-//   const url = new URL(request.url);
-//   const code = url.searchParams.get("code");
-//   const next = url.searchParams.get("next") ?? "/dashboard";
-
-//   if (code) {
-//     const supabase = await createClient();
-//     const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-//     if (!error) {
-//       // Success: go to dashboard (or whatever `next` was passed)
-//       return NextResponse.redirect(`${url.origin}${next}`);
-//     }
-
-//     console.error("OAuth session error:", error);
-//     return NextResponse.redirect(`${url.origin}/login?message=OAuth login failed`);
-//   }
-
-//   // If no code, just go back to login
-//   return NextResponse.redirect(`${url.origin}/login?message=Missing code`);
-// }

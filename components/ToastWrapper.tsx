@@ -1,34 +1,46 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, AlertCircle } from "lucide-react";
 
-export default function ToastWrapper({ code }: { code?: string }) {
+interface ToastProps {
+  message: string;
+  type?: "success" | "error";
+  duration?: number;
+}
+
+export default function ToastWrapper({
+  message,
+  type = "success",
+  duration = 4000,
+}: ToastProps) {
   const [showToast, setShowToast] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
-    if (code) {
-      setShowToast(true);
+    if (!message) return;
 
-      // hide toast after 3s and redirect
-      const timer = setTimeout(() => {
-        setShowToast(false);
-        router.push("/dashboard");
-      }, 3000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [code, router]);
+    setShowToast(true);
+    const timer = setTimeout(() => setShowToast(false), duration);
+    return () => clearTimeout(timer);
+  }, [message, duration]);
 
   if (!showToast) return null;
 
   return (
     <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50">
-      <div className="bg-yellow-400 text-black px-6 py-3 rounded-lg shadow-xl border border-yellow-500 animate-fadeInOut flex items-center gap-3">
-        <CheckCircle className="w-6 h-6 text-black" />
-        <span className="font-semibold">You’ve signed in successfully! Redirecting…</span>
+      <div
+        className={`px-6 py-3 rounded-lg shadow-xl flex items-center gap-3 animate-fadeInOut border ${
+          type === "success"
+            ? "bg-green-500 text-white border-green-600"
+            : "bg-red-600 text-white border-red-700"
+        }`}
+      >
+        {type === "success" ? (
+          <CheckCircle className="w-6 h-6 text-white" />
+        ) : (
+          <AlertCircle className="w-6 h-6 text-white" />
+        )}
+        <span className="font-semibold">{message}</span>
       </div>
     </div>
   );

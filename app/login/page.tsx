@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { SubmitButton } from "./submit-button";
 import { OAuthButton } from "./oauth-signin";
 import { signin, signup } from "./actions";
+import PasswordInput from "@/components/PasswordInput";
 
 export default async function Login({
   searchParams,
@@ -22,10 +23,7 @@ export default async function Login({
   return (
     <main className="min-h-screen w-full bg-gradient-to-br from-gray-900 via-gray-950 to-black font-poppins text-white grid grid-cols-1 md:grid-cols-2">
       {/* Left Branding */}
-      <div
-        className="flex flex-col justify-center items-center p-12 
-  bg-gradient-to-br from-purple-800/80 via-indigo-900/80 to-black/90 relative"
-      >
+      <div className="flex flex-col justify-center items-center p-12 bg-gradient-to-br from-purple-800/80 via-indigo-900/80 to-black/90 relative">
         <h1 className="text-4xl sm:text-5xl font-playfair font-bold drop-shadow-lg z-10 text-yellow-400">
           CHATTER
         </h1>
@@ -33,10 +31,7 @@ export default async function Login({
           Discover. Share. Connect. <br />
           Your stories belong here.
         </p>
-        <div
-          className="absolute inset-0 
-    bg-[radial-gradient(circle_at_top_left,rgba(255,255,0,0.1),transparent_50%)]"
-        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,0,0.1),transparent_50%)]" />
       </div>
 
       {/* Right Form */}
@@ -84,27 +79,17 @@ export default async function Login({
               />
             </div>
 
-            <div>
-              <label className="block text-sm mb-1">Password</label>
-              <input
-                type="password"
-                name="password"
-                required
-                placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-lg bg-gray-800/70 border border-gray-600 text-white placeholder-gray-400 focus:ring-2 focus:ring-yellow-400 outline-none"
-              />
-            </div>
+            <PasswordInput
+              name="password"
+              label="Password"
+              required
+            />
 
-            <div>
-              <label className="block text-sm mb-1">Confirm</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                required
-                placeholder="••••••••"
-                className="w-full px-4 py-3 rounded-lg bg-gray-800/70 border border-gray-600 text-white placeholder-gray-400 focus:ring-2 focus:ring-yellow-400 outline-none"
-              />
-            </div>
+            <PasswordInput
+              name="confirmPassword"
+              label="Confirm"
+              required
+            />
 
             {/* Action Buttons */}
             <SubmitButton
@@ -124,7 +109,14 @@ export default async function Login({
             </SubmitButton>
 
             {message && (
-              <p className="col-span-2 p-3 rounded-md text-center bg-red-500/20 text-red-300 font-medium">
+              <p
+                className={`col-span-2 p-3 rounded-md text-center font-medium ${
+                  message.toLowerCase().includes("confirmed") ||
+                  message.toLowerCase().includes("success")
+                    ? "bg-green-500/20 text-green-300"
+                    : "bg-red-500/20 text-red-300"
+                }`}
+              >
                 {message}
               </p>
             )}

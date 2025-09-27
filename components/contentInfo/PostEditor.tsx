@@ -16,8 +16,6 @@ export default function PostEditor({ onSave, editingPost, clearEditing }: Props)
   const [title, setTitle] = useState("");
   const [editorContent, setEditorContent] = useState("");
   const [saving, setSaving] = useState(false);
-
-  // New state to force editor remount
   const [editorKey, setEditorKey] = useState("new");
 
   const Editor = useMemo(
@@ -25,28 +23,25 @@ export default function PostEditor({ onSave, editingPost, clearEditing }: Props)
     []
   );
 
-  // Preload data if editing
   useEffect(() => {
     if (editingPost) {
       setTitle(editingPost.title);
       setEditorContent(editingPost.content);
       setCoverUrl(editingPost.cover_url || "");
-      setEditorKey(editingPost.id); // use post id to keep content
+      setEditorKey(editingPost.id);
     } else {
-      resetFields(false); // clear for new post
+      resetFields(false);
     }
   }, [editingPost]);
 
-  // Reset function
   const resetFields = (resetEditing = true) => {
     setTitle("");
     setEditorContent("");
     setCoverUrl("");
-    setEditorKey(Date.now().toString()); // force remount
+    setEditorKey(Date.now().toString());
     if (resetEditing) clearEditing();
   };
 
-  // Default cover
   const enableCover = () => {
     setCoverUrl(
       "https://images.unsplash.com/photo-1487017159836-4e23ece2e4cf?q=80&w=2071&auto=format&fit=crop"
@@ -60,7 +55,7 @@ export default function PostEditor({ onSave, editingPost, clearEditing }: Props)
     await onSave(title, DOMPurify.sanitize(editorContent), coverUrl);
     setSaving(false);
 
-    resetFields(); // clears editor + title + cover
+    resetFields();
   };
 
   return (
@@ -87,7 +82,7 @@ export default function PostEditor({ onSave, editingPost, clearEditing }: Props)
       />
 
       <Editor
-        key={editorKey} // dynamic key forces remount
+        key={editorKey}
         onChange={setEditorContent}
         initialContent={editorContent}
         editable
